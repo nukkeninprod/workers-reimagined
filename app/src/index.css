@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --color-brand: #de6b6b;
+  --color-brand-dark: #c45a5a;
+  --color-brand-light: #fadada;
+}
+
+* { box-sizing: border-box; }
+body { font-family: var(--font-sans); }
+
+button, select, [role="button"], a {
+  cursor: pointer;
+}

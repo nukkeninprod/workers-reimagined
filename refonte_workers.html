@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workers - Select Account Type</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            light: '#fadada', // Light pink for shapes
+                            DEFAULT: '#de6b6b', // Main red/coral color
+                            dark: '#c45a5a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom styles for radio card selection */
+        .card-input:checked + .card-content {
+            border-color: #de6b6b;
+            background-color: #fffafb;
+            box-shadow: 0 10px 25px -5px rgba(222, 107, 107, 0.15), 0 8px 10px -6px rgba(222, 107, 107, 0.1);
+        }
+        .card-input:checked + .card-content .icon-container {
+            color: #de6b6b;
+        }
+    </style>
+</head>
+<body class="bg-white text-slate-800 font-sans min-h-screen flex flex-col relative overflow-x-hidden">
+
+    <!-- Background Decorative Shapes -->
+    <div class="absolute bottom-0 left-1/2 w-full max-w-6xl h-full overflow-hidden pointer-events-none -translate-x-1/2 z-0">
+        <!-- Lightest circle -->
+        <div class="absolute -bottom-[40%] right-[15%] w-[900px] h-[900px] bg-[#fdf2f2] rounded-[100%]"></div>
+        <!-- Darker circle overlapping -->
+        <div class="absolute -bottom-[35%] right-[-5%] w-[700px] h-[700px] bg-brand-light rounded-[100%] opacity-80"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="flex justify-between items-center px-6 py-4 border-b border-gray-100 bg-white/80 backdrop-blur-md z-10 sticky top-0">
+        <!-- Logo -->
+        <div class="cursor-pointer">
+            <img src="workers-logo.svg" alt="Workers" class="h-8">
+        </div>
+
+        <!-- Language Selector -->
+        <button class="flex items-center space-x-2 bg-gray-50 hover:bg-gray-100 text-slate-600 px-4 py-2 rounded-lg font-medium transition-colors border border-gray-200">
+            <span>EN</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col items-center px-6 pt-8 pb-24 z-10 relative">
+        
+        <!-- Progress Indicator -->
+        <div class="w-full max-w-3xl mb-12">
+            <div class="flex flex-col mb-2">
+                <i data-lucide="person-standing" class="w-8 h-8 text-slate-800 -ml-1"></i>
+                <span class="text-sm font-bold text-slate-800 mt-1">Warm-up</span>
+            </div>
+            <div class="flex items-center space-x-3 w-full">
+                <!-- Active long line -->
+                <div class="h-2 w-1/2 bg-gray-200 rounded-full overflow-hidden">
+                    <div class="w-full h-full bg-gray-300"></div>
+                </div>
+                <!-- Inactive short lines -->
+                <div class="h-1.5 w-16 bg-gray-100 rounded-full"></div>
+                <div class="h-1.5 w-16 bg-gray-100 rounded-full"></div>
+                <div class="h-1.5 w-16 bg-gray-100 rounded-full"></div>
+            </div>
+        </div>
+
+        <!-- Title -->
+        <h1 class="text-3xl md:text-4xl font-bold text-slate-800 mb-10 text-center tracking-tight">
+            Select the type of account you wish to create
+        </h1>
+
+        <!-- Selection Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
+            
+            <!-- Card 1: Looking for a job -->
+            <label class="cursor-pointer group relative">
+                <input type="radio" name="account_type" value="worker" class="card-input hidden" checked>
+                <div class="card-content h-full flex flex-col items-center justify-center p-12 bg-white border-2 border-gray-200 rounded-2xl transition-all duration-300 hover:border-brand/40 hover:shadow-lg hover:-translate-y-1">
+                    <div class="icon-container text-slate-400 mb-5 transition-colors duration-300 group-hover:text-brand">
+                        <i data-lucide="user" class="w-12 h-12" stroke-width="1.5"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">I'm looking for a job</h2>
+                    <p class="text-slate-500 font-medium">Freelance/Flex/Employee</p>
+                </div>
+            </label>
+
+            <!-- Card 2: Hiring -->
+            <label class="cursor-pointer group relative">
+                <input type="radio" name="account_type" value="company" class="card-input hidden">
+                <div class="card-content h-full flex flex-col items-center justify-center p-12 bg-white border-2 border-gray-200 rounded-2xl transition-all duration-300 hover:border-brand/40 hover:shadow-lg hover:-translate-y-1">
+                    <div class="icon-container text-slate-400 mb-5 transition-colors duration-300 group-hover:text-brand">
+                        <i data-lucide="building-2" class="w-12 h-12" stroke-width="1.5"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">I hire</h2>
+                    <p class="text-slate-500 font-medium">I'm a company</p>
+                </div>
+            </label>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="flex flex-col md:flex-row justify-between items-center px-8 py-6 border-t border-gray-200 bg-white z-10">
+        <!-- Footer Logo -->
+        <div class="mb-4 md:mb-0 opacity-80">
+            <img src="workers-logo.svg" alt="Workers" class="h-6">
+        </div>
+
+        <!-- Copyright -->
+        <div class="text-slate-500 text-sm font-medium mb-4 md:mb-0">
+            © Workers.be 2026
+        </div>
+
+        <!-- Terms -->
+        <a href="#" class="text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors">
+            Terms and Conditions
+        </a>
+    </footer>
+
+    <!-- Floating Action Button -->
+    <button class="fixed bottom-6 right-6 md:bottom-10 md:right-10 bg-[#de6b6b] hover:bg-[#c45a5a] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-brand/30 transition-transform duration-300 hover:scale-110 z-50 group">
+        <i data-lucide="send" class="w-6 h-6 ml-1 group-hover:animate-pulse"></i>
+    </button>
+
+    <!-- Initialize Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

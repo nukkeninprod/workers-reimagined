@@ -6,7 +6,7 @@ interface Props {
   onSelect: (mode: 'import' | 'create') => void
 }
 
-export function StepJobOffer({ onSelect: _onSelect }: Props) {
+export function StepJobOffer({ onSelect }: Props) {
   return (
     <div className="flex flex-col items-center w-full">
       <style>{`
@@ -43,7 +43,7 @@ export function StepJobOffer({ onSelect: _onSelect }: Props) {
           description="Create and tailor a new offer"
         />
         <SelectionCircle
-          onClick={() => {}}
+          onClick={() => onSelect('import')}
           icon={FileText}
           badge={Sparkles}
           badgeColor="text-white bg-purple-600 shadow-md shadow-purple-500/30"

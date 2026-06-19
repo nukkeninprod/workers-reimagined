@@ -10,12 +10,14 @@ import { StepBasicInfo } from './pages/StepBasicInfo'
 import { StepJobOffer } from './pages/StepJobOffer'
 import { StepWorkerProfile } from './pages/StepWorkerProfile'
 import { StepCompanyProfile } from './pages/StepCompanyProfile'
+import { StepImportJobOffer } from './pages/StepImportJobOffer'
 import { StepDone } from './pages/StepDone'
 
-const TOTAL = 4
+const TOTAL = 5
+const TOTAL_WORKER = 4
 
 const WORKER_LABELS = ['Account type', 'Your details', 'Your profile', 'All done!']
-const COMPANY_LABELS = ['Account type', 'Job offer', 'Company details', 'All done!']
+const COMPANY_LABELS = ['Account type', 'Job offer', 'Import offer', 'Company details', 'All done!']
 
 const INITIAL: OnboardingState = {
   accountType: null,
@@ -40,7 +42,8 @@ export default function App() {
     }))
   }
 
-  const next = () => setStep(s => Math.min(s + 1, TOTAL))
+  const maxStep = state.accountType === 'worker' ? TOTAL_WORKER : TOTAL
+  const next = () => setStep(s => Math.min(s + 1, maxStep))
   const back = () => setStep(s => Math.max(s - 1, 1))
 
   return (
@@ -53,7 +56,7 @@ export default function App() {
         <div className="w-full max-w-3xl mx-auto pt-10 pb-0">
           <ProgressBar
             current={step}
-            total={TOTAL}
+            total={maxStep}
             labels={state.accountType === 'company' ? COMPANY_LABELS : WORKER_LABELS}
           />
         </div>
@@ -94,6 +97,9 @@ export default function App() {
           />
         )}
         {step === 3 && state.accountType === 'company' && (
+          <StepImportJobOffer onNext={next} />
+        )}
+        {step === 4 && state.accountType === 'company' && (
           <StepCompanyProfile
             companyName={state.companyName}
             sector={state.sector}
@@ -102,7 +108,14 @@ export default function App() {
           />
         )}
 
-        {step === 4 && (
+        {step === 5 && state.accountType === 'company' && (
+          <StepDone
+            accountType={state.accountType}
+            firstName={state.firstName}
+            onRestart={() => { setState(INITIAL); setStep(1) }}
+          />
+        )}
+        {step === 4 && state.accountType !== 'company' && (
           <StepDone
             accountType={state.accountType}
             firstName={state.firstName}
@@ -118,8 +131,8 @@ export default function App() {
         onNext={next}
         onBack={back}
         showBack={step > 1}
-        nextLabel={step === TOTAL - 1 ? 'Finish' : 'Continue'}
-        hideNext={step === TOTAL || step === 1 || (step === 2 && state.accountType === 'company')}
+        nextLabel={step === maxStep - 1 ? 'Finish' : 'Continue'}
+        hideNext={step === maxStep || step === 1 || (step === 2 && state.accountType === 'company') || (step === 3 && state.accountType === 'company')}
       />
     </div>
   )

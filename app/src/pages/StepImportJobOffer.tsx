@@ -26,7 +26,7 @@ export function StepImportJobOffer({ onNext }: Props) {
         value={textInput}
         onChange={e => setTextInput(e.target.value)}
         rows={8}
-        className="w-full border-2 border-slate-200 rounded-3xl px-6 py-5 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all resize-none mb-4 leading-relaxed"
+        className="w-full bg-white border-2 border-slate-200 rounded-3xl px-6 py-5 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all resize-none mb-4 leading-relaxed"
       />
 
       {/* URL input row */}
@@ -39,7 +39,7 @@ export function StepImportJobOffer({ onNext }: Props) {
             value={urlInput}
             onChange={e => setUrlInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && canContinue && onNext()}
-            className="w-full border-2 border-slate-200 rounded-2xl pl-10 pr-4 py-3.5 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all"
+            className="w-full bg-white border-2 border-slate-200 rounded-2xl pl-10 pr-4 py-3.5 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all"
           />
         </div>
       </div>

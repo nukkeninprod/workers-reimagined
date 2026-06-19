@@ -38,18 +38,18 @@ export function StepJobOffer({ onSelect: _onSelect }: Props) {
       <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-center justify-center">
         <SelectionCircle
           onClick={() => {}}
+          icon={Plus}
+          title="I complete manually"
+          description="Create and tailor a new offer"
+        />
+        <SelectionCircle
+          onClick={() => {}}
           icon={FileText}
           badge={Sparkles}
           badgeColor="text-white bg-purple-600 shadow-md shadow-purple-500/30"
           title="I import my job offer"
           description="Go 3× faster with AI auto-fill"
           isAI
-        />
-        <SelectionCircle
-          onClick={() => {}}
-          icon={Plus}
-          title="I complete manually"
-          description="Create and tailor a new offer"
         />
       </div>
 

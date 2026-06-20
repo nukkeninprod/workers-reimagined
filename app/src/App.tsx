@@ -32,6 +32,7 @@ const INITIAL: OnboardingState = {
   workTypes: [], skills: [],
   jobOfferMode: null,
   parsedJob: null,
+  jobSkills: [],
   experienceLevel: 'medior',
   salary: 3292,
   contractType: null,
@@ -59,8 +60,16 @@ export default function App() {
   }
 
   const maxStep = state.accountType === 'worker' ? TOTAL_WORKER : TOTAL_COMPANY
-  const next = () => setStep(s => Math.min(s + 1, maxStep))
-  const back = () => setStep(s => Math.max(s - 1, 1))
+  const [visible, setVisible] = useState(true)
+
+  function next() {
+    setVisible(false)
+    setTimeout(() => { setStep(s => Math.min(s + 1, maxStep)); setVisible(true) }, 260)
+  }
+  function back() {
+    setVisible(false)
+    setTimeout(() => { setStep(s => Math.max(s - 1, 1)); setVisible(true) }, 260)
+  }
 
   return (
     <div className="bg-white text-slate-800 font-sans min-h-screen flex flex-col relative overflow-x-hidden">
@@ -76,7 +85,14 @@ export default function App() {
           />
         </div>
 
-        <div className="flex-grow flex flex-col items-center pt-0 pb-8">
+        <div
+          className="flex-grow flex flex-col items-center pt-0 pb-8"
+          style={{
+            opacity: visible ? 1 : 0,
+            transform: visible ? 'translateY(0)' : 'translateY(8px)',
+            transition: 'opacity 0.26s ease, transform 0.26s ease',
+          }}
+        >
 
           {step === 1 && (
             <StepAccountType
@@ -114,7 +130,11 @@ export default function App() {
             <StepImportJobOffer onNext={next} />
           )}
           {step === 4 && state.accountType === 'company' && (
-            <StepAIExtract parsed={state.parsedJob} onNext={next} />
+            <StepAIExtract
+              initialSkills={state.parsedJob?.skills ?? []}
+              onConfirm={skills => update({ jobSkills: skills })}
+              onNext={next}
+            />
           )}
           {step === 5 && state.accountType === 'company' && (
             <StepConfirmExperience

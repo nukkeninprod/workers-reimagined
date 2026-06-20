@@ -23,6 +23,7 @@ export interface OnboardingState {
   // Company – job offer
   jobOfferMode: 'import' | 'create' | null
   parsedJob: ParsedJobData | null
+  jobSkills: string[]
   experienceLevel: string
   salary: number
   contractType: 'permanent' | 'freelance' | null

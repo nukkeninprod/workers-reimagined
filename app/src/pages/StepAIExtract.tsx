@@ -1,133 +1,104 @@
-import { Check, MapPin, Globe, Tag, GraduationCap, FileText, Sparkles, type LucideIcon } from 'lucide-react'
-import type { ParsedJobData } from '../types/onboarding'
+import { useState, useRef } from 'react'
+import { X, Plus, Sparkles } from 'lucide-react'
 
-// Mock data — will be replaced by real Claude API response
-export const MOCK_PARSED: ParsedJobData = {
-  jobTitle: 'Business Analyst (H/F)',
-  specialty: 'IT Consultant',
-  skills: ['Agile', 'Scrum', 'Kanban', 'Jira', 'Confluence', 'Power BI'],
-  location: 'Brussels',
-  workMode: 'Both',
-  languages: ['FR', 'NL', 'EN'],
-  experienceLevel: 'Medior',
-  description: 'Looking for a Business Analyst to join NovaTech Solutions in Brussels. This permanent role allows for both onsite and remote work, targeting candidates with moderate IT consultancy experience.',
-}
+const MOCK_SKILLS = ['Agile', 'Scrum', 'Kanban', 'Jira', 'Confluence', 'Power BI']
 
 interface Props {
-  parsed: ParsedJobData | null
+  initialSkills: string[]
+  onConfirm: (skills: string[]) => void
   onNext: () => void
 }
 
-export function StepAIExtract({ parsed, onNext }: Props) {
-  const data = parsed ?? MOCK_PARSED
+export function StepAIExtract({ initialSkills, onConfirm, onNext }: Props) {
+  const [skills, setSkills] = useState<string[]>(initialSkills.length ? initialSkills : MOCK_SKILLS)
+  const [input, setInput] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  function addSkill() {
+    const trimmed = input.trim()
+    if (trimmed && !skills.map(s => s.toLowerCase()).includes(trimmed.toLowerCase())) {
+      setSkills(s => [...s, trimmed])
+    }
+    setInput('')
+    inputRef.current?.focus()
+  }
+
+  function removeSkill(skill: string) {
+    setSkills(s => s.filter(x => x !== skill))
+  }
+
+  function handleContinue() {
+    onConfirm(skills)
+    onNext()
+  }
 
   return (
     <div className="flex flex-col items-center w-full max-w-2xl mx-auto">
-      <style>{`
-        @keyframes fade-up {
-          from { opacity: 0; transform: translateY(12px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .fade-up { animation: fade-up 0.45s ease both; }
-        .fade-up-1 { animation-delay: 0.05s; }
-        .fade-up-2 { animation-delay: 0.15s; }
-        .fade-up-3 { animation-delay: 0.25s; }
-      `}</style>
-
-      {/* AI agent header */}
-      <div className="fade-up fade-up-1 w-full flex items-center gap-3 mb-6">
-        <div className="w-11 h-11 rounded-2xl bg-purple-100 flex items-center justify-center flex-shrink-0">
-          <Sparkles size={20} className="text-purple-600" strokeWidth={1.8} />
+      {/* AI badge */}
+      <div className="flex items-center gap-2 mb-8">
+        <div className="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center">
+          <Sparkles size={15} className="text-purple-600" strokeWidth={1.8} />
         </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-900 text-sm">Workers AI</span>
-            <span className="text-xs bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full font-semibold tracking-tight">
-              ✓ Parsing complete
-            </span>
-          </div>
-          <p className="text-xs text-slate-400 mt-0.5">Extracted from your job description</p>
-        </div>
+        <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-3 py-1 rounded-full">
+          AI detected · edit if needed
+        </span>
       </div>
 
-      {/* Result card */}
-      <div className="fade-up fade-up-2 w-full bg-white border-2 border-slate-100 rounded-3xl shadow-sm overflow-hidden mb-6">
+      <h1 className="text-4xl font-extrabold text-slate-900 mb-3 text-center tracking-tight">
+        What skills are you looking for?
+      </h1>
+      <p className="text-slate-500 text-base mb-10 text-center">
+        I found these in your job description. Remove anything off, add what's missing.
+      </p>
 
-        {/* Card header */}
-        <div className="px-6 pt-6 pb-4 border-b border-slate-50">
-          <h2 className="font-extrabold text-slate-900 text-2xl leading-tight">{data.jobTitle}</h2>
-          <p className="text-slate-500 text-sm mt-1">{data.specialty}</p>
-        </div>
-
-        {/* Extracted fields */}
-        <div className="px-6 py-2 divide-y divide-slate-50">
-          <Row icon={Tag} label="Skills">
-            <div className="flex flex-wrap gap-1.5 py-0.5">
-              {data.skills.map(s => (
-                <span key={s} className="text-xs bg-slate-100 text-slate-700 font-semibold px-2.5 py-1 rounded-full">{s}</span>
-              ))}
-            </div>
-          </Row>
-
-          <Row icon={MapPin} label="Location">
-            <span className="text-sm font-semibold text-slate-800">{data.location} · {data.workMode}</span>
-          </Row>
-
-          <Row icon={Globe} label="Languages">
-            <div className="flex gap-1.5">
-              {data.languages.map(l => (
-                <span key={l} className="text-xs bg-blue-50 text-blue-700 font-bold px-2.5 py-1 rounded-full">{l}</span>
-              ))}
-            </div>
-          </Row>
-
-          <Row icon={GraduationCap} label="Experience">
-            <span className="text-sm font-semibold text-slate-800">{data.experienceLevel}</span>
-          </Row>
-
-          <Row icon={FileText} label="Description">
-            <p className="text-sm text-slate-500 leading-relaxed line-clamp-2">{data.description}</p>
-          </Row>
-        </div>
-
-        {/* Footer summary */}
-        <div className="px-6 py-4 bg-slate-50 flex items-center justify-between">
-          <span className="text-xs text-slate-400 font-medium">
-            {data.skills.length} skills · {data.languages.length} languages · 1 location
+      {/* Skill chips */}
+      <div className="w-full flex flex-wrap gap-2.5 mb-6 min-h-[52px]">
+        {skills.map(skill => (
+          <span
+            key={skill}
+            className="flex items-center gap-2 bg-white border-2 border-slate-200 hover:border-brand/30 text-slate-700 font-semibold text-sm px-4 py-2 rounded-full transition-all group"
+          >
+            {skill}
+            <button
+              onClick={() => removeSkill(skill)}
+              className="w-4 h-4 rounded-full bg-slate-200 group-hover:bg-red-100 flex items-center justify-center transition-colors flex-shrink-0"
+            >
+              <X size={10} className="text-slate-400 group-hover:text-red-500" strokeWidth={3} />
+            </button>
           </span>
-          <span className="text-xs font-semibold text-green-600 bg-green-50 px-2.5 py-1 rounded-full">
-            {[data.jobTitle, data.specialty, ...data.skills, ...data.languages, data.location, data.experienceLevel, data.description].filter(Boolean).length} fields filled
-          </span>
-        </div>
+        ))}
+        {skills.length === 0 && (
+          <p className="text-slate-400 text-sm italic">No skills yet — add some below.</p>
+        )}
       </div>
 
-      {/* CTA */}
-      <div className="fade-up fade-up-3 flex flex-col items-center gap-3">
+      {/* Add skill input */}
+      <div className="w-full flex items-center gap-2.5 mb-10">
+        <input
+          ref={inputRef}
+          type="text"
+          placeholder="Add a skill…"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkill() } }}
+          className="flex-1 bg-white border-2 border-slate-200 rounded-2xl px-5 py-3.5 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all"
+        />
         <button
-          onClick={onNext}
-          className="bg-brand hover:bg-brand-dark text-white px-10 py-3.5 rounded-2xl font-semibold transition-all hover:scale-105 shadow-lg shadow-brand/20 text-sm"
+          onClick={addSkill}
+          disabled={!input.trim()}
+          className="w-12 h-12 rounded-2xl bg-brand text-white flex items-center justify-center transition-all hover:bg-brand-dark hover:scale-105 disabled:opacity-30 disabled:cursor-not-allowed shadow-md shadow-brand/20 flex-shrink-0"
         >
-          Looks good, continue →
+          <Plus size={20} strokeWidth={2.5} />
         </button>
-        <p className="text-xs text-slate-400">You'll be able to edit any field in the next steps</p>
       </div>
-    </div>
-  )
-}
 
-function Row({ icon: Icon, label, children }: { icon: LucideIcon; label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-4 py-3.5">
-      <div className="flex items-center gap-2 w-32 flex-shrink-0">
-        <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-          <Check size={11} className="text-green-600" strokeWidth={3} />
-        </div>
-        <div className="flex items-center gap-1.5">
-          <Icon size={12} className="text-slate-400" />
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">{label}</span>
-        </div>
-      </div>
-      <div className="flex-1 min-w-0">{children}</div>
+      <button
+        onClick={handleContinue}
+        disabled={skills.length === 0}
+        className="bg-brand hover:bg-brand-dark text-white px-10 py-3.5 rounded-2xl font-semibold transition-all hover:scale-105 shadow-lg shadow-brand/20 text-sm disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+        Looks good →
+      </button>
     </div>
   )
 }

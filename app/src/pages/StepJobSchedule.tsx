@@ -152,7 +152,7 @@ export function StepJobSchedule({
                 {DAYS.map(d => {
                   const active = typicalWeek.includes(d.key)
                   return active ? (
-                    <span key={d.key} className="px-4 py-2 rounded-full text-sm font-semibold bg-brand text-white shadow-md shadow-brand/20 ring-2 ring-brand ring-offset-2 ring-offset-slate-50">
+                    <span key={d.key} className="px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500 text-white shadow-md shadow-emerald-500/20 ring-2 ring-emerald-500 ring-offset-2 ring-offset-slate-50">
                       {d.short}
                     </span>
                   ) : (

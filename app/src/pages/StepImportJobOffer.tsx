@@ -20,7 +20,7 @@ const SYSTEM_PROMPT = `You are a job offer parser. Extract structured data from 
   "description": "2-3 sentence summary of the role",
   "companyName": "string (company name if mentioned, or empty string)",
   "companyAddress": "string (company address if mentioned, or empty string)",
-  "contractType": "permanent | freelance | null (permanent for CDI/full-time/employee contracts, freelance for freelance/contractor/independent/mission contracts, null if unclear)",
+  "contractType": "permanent | freelance | flexi | student | null (permanent for CDI/full-time/employee; freelance for contractor/mission/independent; flexi for flexi-job/flexi worker/jobiste flexi; student for student job/job étudiant/jobiste étudiant/kot-job; null if unclear)",
   "jobCategory": "student_flexi | permanent_freelance — reason through the offer: if it mentions student job, jobiste, étudiant, flexi, interim, flexi-job, casual hours, limited hours per week, low hourly rate typical of student work → student_flexi; if it mentions CDI, CDD, permanent, full-time professional, freelance mission, consultant, contractor → permanent_freelance; when in doubt lean toward permanent_freelance"
 }
 Return ONLY the JSON object, no explanation, no markdown.`

@@ -11,7 +11,7 @@ export interface ParsedJobData {
   description: string
   companyName: string
   companyAddress: string
-  contractType: 'permanent' | 'freelance' | null
+  contractType: 'permanent' | 'freelance' | 'flexi' | 'student' | null
   jobCategory: 'student_flexi' | 'permanent_freelance'
 }
 

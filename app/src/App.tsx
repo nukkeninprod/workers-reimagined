@@ -158,6 +158,8 @@ export default function App() {
             <StepAIExtract
               initialSkills={state.jobSkills.length ? state.jobSkills : (state.parsedJob?.skills ?? [])}
               onChange={skills => update({ jobSkills: skills })}
+              jobLanguages={state.jobLanguages}
+              onLanguages={v => update({ jobLanguages: v })}
             />
           )}
           {step === 6 && state.accountType === 'company' && isFlexi && (
@@ -167,12 +169,10 @@ export default function App() {
               contractType={state.contractType}
               jobCategory={state.jobCategory}
               jobLocation={state.jobLocation}
-              jobLanguages={state.jobLanguages}
               onExperience={v => update({ experienceLevel: v })}
               onSalary={v => update({ salary: v })}
               onContract={v => update({ contractType: v })}
               onLocation={v => update({ jobLocation: v })}
-              onLanguages={v => update({ jobLanguages: v })}
             />
           )}
           {step === 7 && state.accountType === 'company' && isFlexi && (

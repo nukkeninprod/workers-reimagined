@@ -181,7 +181,7 @@ export function StepJobSchedule({
                   <Calendar size={14} /> Select job dates
                 </h3>
                 <button onClick={() => setShowDatePicker(true)}
-                  className="w-full mt-2 flex items-center gap-3 bg-white border-2 border-slate-200 hover:border-brand rounded-2xl px-4 py-3 transition-all group">
+                  className="mt-2 inline-flex items-center gap-2 bg-white border-2 border-slate-200 hover:border-brand rounded-xl px-3 py-2 transition-all group">
                   <Calendar size={16} className="text-slate-400 group-hover:text-brand flex-shrink-0" />
                   <div className="text-left min-w-0">
                     {start && end ? (
@@ -410,6 +410,7 @@ export function StepJobSchedule({
       {showDatePicker && createPortal((() => {
         const today = new Date()
         const baseMonth = new Date(today.getFullYear(), today.getMonth() + calOffset, 1)
+        const months2 = [baseMonth, new Date(baseMonth.getFullYear(), baseMonth.getMonth() + 1, 1)]
         const selecting = startDate && !endDate
 
         function CalMonth({ month }: { month: Date }) {
@@ -420,11 +421,11 @@ export function StepJobSchedule({
           while (cells.length % 7 !== 0) cells.push(null)
           return (
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-slate-900 text-center mb-2">{month.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</p>
-              <div className="grid grid-cols-7 text-[10px] text-slate-400 font-bold mb-1 text-center">
+              <p className="text-sm font-bold text-slate-900 text-center mb-3">{month.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</p>
+              <div className="grid grid-cols-7 text-[11px] text-slate-400 font-bold mb-1 text-center">
                 {['Mo','Tu','We','Th','Fr','Sa','Su'].map(h => <div key={h}>{h}</div>)}
               </div>
-              <div className="grid grid-cols-7">
+              <div className="grid grid-cols-7 gap-y-0.5">
                 {cells.map((day, i) => {
                   if (!day) return <div key={i} />
                   const iso = `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`
@@ -436,7 +437,7 @@ export function StepJobSchedule({
                   const isHover = selecting && pickerHover && iso > startDate! && iso <= pickerHover
                   return (
                     <div key={i}
-                      className={`relative text-center py-0.5 text-xs select-none transition-colors
+                      className={`relative text-center py-1.5 text-sm select-none transition-colors
                         ${isPast ? 'text-slate-300 cursor-not-allowed' : 'cursor-pointer'}
                         ${(inRange || isHover) ? 'bg-brand/10 text-brand font-semibold' : ''}
                         ${isStart ? 'rounded-l-full' : ''} ${isEnd ? 'rounded-r-full' : ''}
@@ -444,8 +445,8 @@ export function StepJobSchedule({
                       onClick={() => !isPast && handlePickerDay(iso)}
                       onMouseEnter={() => !isPast && selecting && setPickerHover(iso)}
                     >
-                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold
-                        ${isStart || isEnd ? 'bg-brand text-white shadow-sm' : ''}`}>
+                      <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold
+                        ${isStart || isEnd ? 'bg-brand text-white shadow-md' : ''}`}>
                         {day}
                       </span>
                     </div>
@@ -459,7 +460,7 @@ export function StepJobSchedule({
         return (
           <div className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
             onClick={() => { setShowDatePicker(false); setPickerHover(null) }}>
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xs p-5" onClick={e => e.stopPropagation()}>
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl p-6" onClick={e => e.stopPropagation()}>
               {/* Header */}
               <div className="flex items-center justify-between mb-2">
                 <div>
@@ -474,16 +475,18 @@ export function StepJobSchedule({
                 </button>
               </div>
 
-              {/* Month nav + single month */}
-              <div className="flex items-center justify-between mb-1">
+              {/* Month nav */}
+              <div className="flex items-center justify-between mb-4">
                 <button onClick={() => setCalOffset(o => o - 1)}
-                  className="w-7 h-7 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500 text-base">‹</button>
+                  className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500">‹</button>
                 <span />
                 <button onClick={() => setCalOffset(o => o + 1)}
-                  className="w-7 h-7 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500 text-base">›</button>
+                  className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500">›</button>
               </div>
-              <div onMouseLeave={() => setPickerHover(null)}>
-                <CalMonth month={baseMonth} />
+
+              {/* Two months */}
+              <div className="flex gap-6" onMouseLeave={() => setPickerHover(null)}>
+                {months2.map((m, i) => <CalMonth key={i} month={m} />)}
               </div>
 
               {/* Footer */}

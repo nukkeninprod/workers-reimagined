@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ChevronRight } from 'lucide-react'
-import { getDomainsForCategory, findDomainForSpecialty, FLEXI_DOMAINS } from '../data/domains'
+import { DOMAINS, findDomainForSpecialty } from '../data/domains'
 
 interface Props {
   initialTitle: string
@@ -9,17 +9,13 @@ interface Props {
   onChange: (title: string, specialty: string) => void
 }
 
-export function StepConfirmJobTitle({ initialTitle, initialSpecialty, jobCategory, onChange }: Props) {
-  const domains = getDomainsForCategory(jobCategory ?? null)
+export function StepConfirmJobTitle({ initialTitle, initialSpecialty, onChange }: Props) {
   const [title, setTitle] = useState(initialTitle || '')
   const [selectedDomain, setSelectedDomain] = useState(
-    () => findDomainForSpecialty(initialSpecialty, jobCategory)
+    () => findDomainForSpecialty(initialSpecialty)
   )
   const [selectedSpecialty, setSelectedSpecialty] = useState(initialSpecialty || '')
   const [choosingDomain, setChoosingDomain] = useState(false)
-
-  const flexiLabels = new Set(FLEXI_DOMAINS.map(d => d.label))
-  const isFlexiDomain = (label: string) => flexiLabels.has(label)
 
   useEffect(() => { onChange(title.trim(), selectedSpecialty) }, [title, selectedSpecialty])
 
@@ -83,7 +79,7 @@ export function StepConfirmJobTitle({ initialTitle, initialSpecialty, jobCategor
         <div className="w-full bg-white border-2 border-slate-100 rounded-2xl p-6">
           <p className="text-sm text-slate-400 mb-4 font-medium">Choose a domain</p>
           <div className="grid grid-cols-2 gap-3">
-            {domains.map(d => (
+            {DOMAINS.map(d => (
               <button
                 key={d.label}
                 onClick={() => {
@@ -99,9 +95,6 @@ export function StepConfirmJobTitle({ initialTitle, initialSpecialty, jobCategor
               >
                 <d.Icon size={16} strokeWidth={1.8} className="flex-shrink-0" />
                 <span className="flex-1">{d.label}</span>
-                {jobCategory === 'student_flexi' && isFlexiDomain(d.label) && (
-                  <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-wide bg-emerald-50 px-1.5 py-0.5 rounded-full">flexi</span>
-                )}
               </button>
             ))}
           </div>

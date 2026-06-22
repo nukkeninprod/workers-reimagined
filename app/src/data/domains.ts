@@ -1,6 +1,6 @@
 import { Briefcase, Code2, BarChart2, Palette, Cloud, Megaphone, UtensilsCrossed, ShoppingBag, Package, Star, Heart, ClipboardList, Wrench } from 'lucide-react'
 
-export const FLEXI_DOMAINS = [
+export const DOMAINS = [
   {
     label: 'Hospitality & Food',
     Icon: UtensilsCrossed,
@@ -36,9 +36,6 @@ export const FLEXI_DOMAINS = [
     Icon: Wrench,
     specialties: ['Cleaner', 'Janitor', 'Handyman', 'Gardener', 'Maintenance Worker'],
   },
-]
-
-export const DOMAINS = [
   {
     label: 'Project Management & Coaching',
     Icon: Briefcase,
@@ -71,21 +68,14 @@ export const DOMAINS = [
   },
 ]
 
-export const ALL_SPECIALTIES = [...FLEXI_DOMAINS, ...DOMAINS].flatMap(d => d.specialties)
+export const ALL_SPECIALTIES = DOMAINS.flatMap(d => d.specialties)
 
-export function getDomainsForCategory(category: 'student_flexi' | 'permanent_freelance' | null) {
-  return category === 'student_flexi'
-    ? [...FLEXI_DOMAINS, ...DOMAINS]
-    : [...DOMAINS, ...FLEXI_DOMAINS]
-}
-
-export function findDomainForSpecialty(specialty: string, category?: 'student_flexi' | 'permanent_freelance' | null) {
-  const pool = getDomainsForCategory(category ?? null)
+export function findDomainForSpecialty(specialty: string) {
   const lower = specialty.toLowerCase()
   return (
-    pool.find(d => d.specialties.some(s => s.toLowerCase() === lower)) ??
-    pool.find(d => d.specialties.some(s => lower.includes(s.toLowerCase()) || s.toLowerCase().includes(lower))) ??
-    pool[0]
+    DOMAINS.find(d => d.specialties.some(s => s.toLowerCase() === lower)) ??
+    DOMAINS.find(d => d.specialties.some(s => lower.includes(s.toLowerCase()) || s.toLowerCase().includes(lower))) ??
+    DOMAINS[0]
   )
 }
 

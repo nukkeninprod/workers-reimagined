@@ -222,10 +222,7 @@ export function StepJobSchedule({
 
             {typicalWeek.length > 0 && (
               <>
-                <hr className="border-slate-200 my-8" />
-
-                {/* Shifts */}
-                <div>
+                <div className="mt-4">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                       <Clock size={14} /> Detected shifts

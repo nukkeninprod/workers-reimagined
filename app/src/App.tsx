@@ -19,11 +19,11 @@ import { StepDone } from './pages/StepDone'
 import { resolveSpecialty } from './data/domains'
 
 const TOTAL_WORKER = 5
-const TOTAL_COMPANY_FLEXI = 7
+const TOTAL_COMPANY_FLEXI = 8
 const TOTAL_COMPANY = 10
 
 const WORKER_LABELS = ['Account type', 'Your details', 'Your profile', 'Sign up', 'Done!']
-const COMPANY_LABELS_FLEXI = ['Account', 'Method', 'Import', 'Role', 'Contract', 'Sign up', 'Done']
+const COMPANY_LABELS_FLEXI = ['Account', 'Method', 'Import', 'Role', 'Skills', 'Contract', 'Sign up', 'Done']
 const COMPANY_LABELS = ['Account', 'Method', 'Import', 'Role', 'Skills', 'Preferences', 'Conditions', 'Sign up', 'Pricing', 'Done']
 
 const INITIAL: OnboardingState = {
@@ -155,6 +155,12 @@ export default function App() {
           )}
           {/* Company flow – step 5+ branches on jobCategory */}
           {step === 5 && state.accountType === 'company' && isFlexi && (
+            <StepAIExtract
+              initialSkills={state.jobSkills.length ? state.jobSkills : (state.parsedJob?.skills ?? [])}
+              onChange={skills => update({ jobSkills: skills })}
+            />
+          )}
+          {step === 6 && state.accountType === 'company' && isFlexi && (
             <StepJobPreferences
               experienceLevel={state.experienceLevel}
               salary={state.salary}
@@ -165,10 +171,10 @@ export default function App() {
               onContract={v => update({ contractType: v })}
             />
           )}
-          {step === 6 && state.accountType === 'company' && isFlexi && (
+          {step === 7 && state.accountType === 'company' && isFlexi && (
             <StepSignup initialEmail={state.email} onValidChange={setSignupValid} onSocialLogin={next} />
           )}
-          {step === 7 && state.accountType === 'company' && isFlexi && (
+          {step === 8 && state.accountType === 'company' && isFlexi && (
             <StepDone accountType={state.accountType} firstName={state.firstName}
               onRestart={() => { setState(INITIAL); setStep(1) }} />
           )}
@@ -227,8 +233,9 @@ export default function App() {
         confirmDisabled={
           step === 4 && state.accountType === 'worker' ? !signupValid :
           step === 4 ? (!state.jobTitle.trim() || !state.specialty) :
-          step === 5 && isFlexi ? !state.contractType :
-          step === 6 && isFlexi ? !signupValid :
+          step === 5 && isFlexi ? state.jobSkills.length === 0 :
+          step === 6 && isFlexi ? !state.contractType :
+          step === 7 && isFlexi ? !signupValid :
           step === 5 ? state.jobSkills.length === 0 :
           step === 6 ? !state.contractType :
           step === 8 ? !signupValid :

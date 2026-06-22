@@ -113,11 +113,10 @@ export function StepJobSchedule({
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-4 pt-8 pb-12">
+    <div className="w-full max-w-3xl mx-auto px-4 pb-12">
       {detected ? (
         <>
           <h2 className="text-3xl font-bold text-slate-900 text-center mb-2">Are these hours correct?</h2>
-          <p className="text-sm text-slate-500 text-center mb-8">Review and tweak the schedule below.</p>
         </>
       ) : (
         <>

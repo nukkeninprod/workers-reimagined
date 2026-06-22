@@ -1,5 +1,15 @@
 export type AccountType = 'worker' | 'company'
 
+export type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun'
+
+export interface ParsedSchedule {
+  startDate: string | null   // ISO 'YYYY-MM-DD'
+  endDate: string | null
+  workingDays: DayKey[]      // [] if not specified
+  dailyStart: string | null  // 'HH:MM'
+  dailyEnd: string | null
+}
+
 export interface ParsedJobData {
   jobTitle: string
   specialty: string
@@ -13,6 +23,7 @@ export interface ParsedJobData {
   companyAddress: string
   contractType: 'permanent' | 'freelance' | 'flexi' | 'student' | null
   jobCategory: 'student_flexi' | 'permanent_freelance'
+  schedule: ParsedSchedule | null
 }
 
 export interface OnboardingState {
@@ -42,6 +53,7 @@ export interface OnboardingState {
   jobEndDate: string
   typicalWeek: ('mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun')[]
   shiftsByDay: Record<string, { start: string; end: string; people: number; breakMin: number }[]>
+  scheduleDetected: boolean
   // Company – company details
   companyName: string
   companyAddress: string

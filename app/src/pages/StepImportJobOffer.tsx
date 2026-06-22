@@ -21,7 +21,14 @@ const SYSTEM_PROMPT = `You are a job offer parser. Extract structured data from 
   "companyName": "string (company name if mentioned, or empty string)",
   "companyAddress": "string (company address if mentioned, or empty string)",
   "contractType": "permanent | freelance | flexi | student | null (permanent for CDI/full-time/employee; freelance for contractor/mission/independent; flexi for flexi-job/flexi worker/jobiste flexi; student for student job/job étudiant/jobiste étudiant/kot-job; null if unclear)",
-  "jobCategory": "student_flexi | permanent_freelance — reason through the offer: if it mentions student job, jobiste, étudiant, flexi, interim, flexi-job, casual hours, limited hours per week, low hourly rate typical of student work → student_flexi; if it mentions CDI, CDD, permanent, full-time professional, freelance mission, consultant, contractor → permanent_freelance; when in doubt lean toward permanent_freelance"
+  "jobCategory": "student_flexi | permanent_freelance — reason through the offer: if it mentions student job, jobiste, étudiant, flexi, interim, flexi-job, casual hours, limited hours per week, low hourly rate typical of student work → student_flexi; if it mentions CDI, CDD, permanent, full-time professional, freelance mission, consultant, contractor → permanent_freelance; when in doubt lean toward permanent_freelance",
+  "schedule": {
+    "startDate": "YYYY-MM-DD or null (extract only if a clear start date is mentioned; today is 2026-06-22 — resolve relative dates like 'starting July' → 2026-07-01)",
+    "endDate": "YYYY-MM-DD or null (extract only if a clear end date or duration is mentioned; if 'for 2 months' from July, compute 2026-08-31)",
+    "workingDays": "array of day keys (mon|tue|wed|thu|fri|sat|sun) — include a day only if explicitly mentioned (e.g. 'Mon-Fri' → [mon,tue,wed,thu,fri]; 'weekends' → [sat,sun]); empty array if not specified",
+    "dailyStart": "HH:MM or null (start hour if a uniform daily start is mentioned, e.g. '9am-5pm' → 09:00)",
+    "dailyEnd": "HH:MM or null (end hour if mentioned, e.g. '9am-5pm' → 17:00)"
+  }
 }
 Return ONLY the JSON object, no explanation, no markdown.`
 

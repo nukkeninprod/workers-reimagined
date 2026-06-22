@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Calendar, Clock, Users, Coffee, X, Plus, Copy, List } from 'lucide-react'
+import { Calendar, Clock, Users, Coffee, X, Plus, Copy, List, Sparkles, CalendarPlus } from 'lucide-react'
 
 export type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun'
 export interface Shift { start: string; end: string; people: number; breakMin: number }
@@ -22,6 +22,7 @@ interface Props {
   endDate: string
   typicalWeek: DayKey[]
   shiftsByDay: ShiftsByDay
+  detected?: boolean
   onStartDate: (v: string) => void
   onEndDate: (v: string) => void
   onTypicalWeek: (v: DayKey[]) => void
@@ -42,7 +43,7 @@ function fmtLong(d: Date) {
 }
 
 export function StepJobSchedule({
-  startDate, endDate, typicalWeek, shiftsByDay,
+  startDate, endDate, typicalWeek, shiftsByDay, detected,
   onStartDate, onEndDate, onTypicalWeek, onShifts,
 }: Props) {
   const [showAll, setShowAll] = useState(false)
@@ -113,8 +114,27 @@ export function StepJobSchedule({
 
   return (
     <div className="w-full max-w-3xl mx-auto px-4 pt-8 pb-12">
-      <h2 className="text-3xl font-bold text-slate-900 text-center mb-2">Select your job dates</h2>
-      <p className="text-sm text-slate-500 text-center mb-8">Pick a start and end date — like booking a stay.</p>
+      {detected ? (
+        <>
+          <div className="flex justify-center mb-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 text-xs font-bold">
+              <Sparkles size={13} /> Detected from your job offer
+            </div>
+          </div>
+          <h2 className="text-3xl font-bold text-slate-900 text-center mb-2">Are these hours correct?</h2>
+          <p className="text-sm text-slate-500 text-center mb-8">We pre-filled the schedule from your offer — review and tweak below.</p>
+        </>
+      ) : (
+        <>
+          <div className="flex justify-center mb-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
+              <CalendarPlus size={13} /> No schedule detected in your offer
+            </div>
+          </div>
+          <h2 className="text-3xl font-bold text-slate-900 text-center mb-2">Select your job dates</h2>
+          <p className="text-sm text-slate-500 text-center mb-8">Pick a start and end date — like booking a stay.</p>
+        </>
+      )}
 
       {/* Date range pickers */}
       <div className="grid grid-cols-2 gap-3 mb-3">

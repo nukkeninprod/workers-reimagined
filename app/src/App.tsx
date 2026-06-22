@@ -53,6 +53,7 @@ const INITIAL: OnboardingState = {
     thu: [{ start: '09:00', end: '17:00', people: 1, breakMin: 0 }],
     fri: [{ start: '09:00', end: '17:00', people: 1, breakMin: 0 }],
   },
+  scheduleDetected: false,
   companyName: '', companyAddress: '', companyVAT: '', companyWebsite: '',
   sector: '', companySize: '',
   companyDescription: '',
@@ -152,7 +153,36 @@ export default function App() {
           )}
           {step === 3 && state.accountType === 'company' && (
             <StepImportJobOffer
-              onParsed={data => update({ parsedJob: data, jobCategory: data.jobCategory ?? 'permanent_freelance', jobTitle: data.jobTitle ?? '', specialty: resolveSpecialty(data.specialty ?? ''), jobSkills: data.skills ?? [], jobLocation: data.location ?? '', workMode: data.workMode ?? 'hybrid', jobLanguages: data.languages ?? [], companyName: data.companyName ?? '', companyAddress: data.companyAddress ?? '', contractType: data.contractType ?? null })}
+              onParsed={data => {
+                const sched = data.schedule
+                const hasSched = !!sched && (!!sched.startDate || !!sched.endDate || (sched.workingDays?.length ?? 0) > 0 || !!sched.dailyStart || !!sched.dailyEnd)
+                const updates: Partial<OnboardingState> = {
+                  parsedJob: data,
+                  jobCategory: data.jobCategory ?? 'permanent_freelance',
+                  jobTitle: data.jobTitle ?? '',
+                  specialty: resolveSpecialty(data.specialty ?? ''),
+                  jobSkills: data.skills ?? [],
+                  jobLocation: data.location ?? '',
+                  workMode: data.workMode ?? 'hybrid',
+                  jobLanguages: data.languages ?? [],
+                  companyName: data.companyName ?? '',
+                  companyAddress: data.companyAddress ?? '',
+                  contractType: data.contractType ?? null,
+                  scheduleDetected: hasSched,
+                }
+                if (hasSched && sched) {
+                  if (sched.startDate) updates.jobStartDate = sched.startDate
+                  if (sched.endDate) updates.jobEndDate = sched.endDate
+                  if (sched.workingDays && sched.workingDays.length > 0) updates.typicalWeek = sched.workingDays
+                  if (sched.dailyStart && sched.dailyEnd) {
+                    const days = (sched.workingDays && sched.workingDays.length > 0) ? sched.workingDays : (['mon','tue','wed','thu','fri'] as const)
+                    const shifts: Record<string, { start: string; end: string; people: number; breakMin: number }[]> = {}
+                    days.forEach(d => { shifts[d] = [{ start: sched.dailyStart!, end: sched.dailyEnd!, people: 1, breakMin: 0 }] })
+                    updates.shiftsByDay = shifts
+                  }
+                }
+                update(updates)
+              }}
               onNext={next}
             />
           )}
@@ -192,6 +222,7 @@ export default function App() {
               endDate={state.jobEndDate}
               typicalWeek={state.typicalWeek}
               shiftsByDay={state.shiftsByDay as never}
+              detected={state.scheduleDetected}
               onStartDate={v => update({ jobStartDate: v })}
               onEndDate={v => update({ jobEndDate: v })}
               onTypicalWeek={v => update({ typicalWeek: v })}

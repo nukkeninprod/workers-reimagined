@@ -9,6 +9,10 @@ export interface ParsedJobData {
   languages: string[]
   experienceLevel: string
   description: string
+  companyName: string
+  companyAddress: string
+  contractType: 'permanent' | 'freelance' | null
+  jobCategory: 'student_flexi' | 'permanent_freelance'
 }
 
 export interface OnboardingState {
@@ -23,7 +27,13 @@ export interface OnboardingState {
   // Company – job offer
   jobOfferMode: 'import' | 'create' | null
   parsedJob: ParsedJobData | null
+  jobCategory: 'student_flexi' | 'permanent_freelance' | null
+  jobTitle: string
+  specialty: string
   jobSkills: string[]
+  jobLocation: string
+  workMode: string
+  jobLanguages: string[]
   experienceLevel: string
   salary: number
   contractType: 'permanent' | 'freelance' | null

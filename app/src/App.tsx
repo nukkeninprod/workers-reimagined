@@ -19,9 +19,11 @@ import { StepDone } from './pages/StepDone'
 import { resolveSpecialty } from './data/domains'
 
 const TOTAL_WORKER = 5
+const TOTAL_COMPANY_FLEXI = 6
 const TOTAL_COMPANY = 10
 
 const WORKER_LABELS = ['Account type', 'Your details', 'Your profile', 'Sign up', 'Done!']
+const COMPANY_LABELS_FLEXI = ['Account', 'Method', 'Import', 'Role', 'Sign up', 'Done']
 const COMPANY_LABELS = ['Account', 'Method', 'Import', 'Role', 'Skills', 'Preferences', 'Conditions', 'Sign up', 'Pricing', 'Done']
 
 const INITIAL: OnboardingState = {
@@ -30,6 +32,7 @@ const INITIAL: OnboardingState = {
   workTypes: [], skills: [],
   jobOfferMode: null,
   parsedJob: null,
+  jobCategory: null,
   jobTitle: '',
   specialty: '',
   jobSkills: [],
@@ -62,7 +65,10 @@ export default function App() {
     }))
   }
 
-  const maxStep = state.accountType === 'worker' ? TOTAL_WORKER : TOTAL_COMPANY
+  const isFlexi = state.jobCategory === 'student_flexi'
+  const maxStep = state.accountType === 'worker'
+    ? TOTAL_WORKER
+    : isFlexi ? TOTAL_COMPANY_FLEXI : TOTAL_COMPANY
   const [visible, setVisible] = useState(true)
 
   function next() {
@@ -84,7 +90,7 @@ export default function App() {
           <ProgressBar
             current={step}
             total={maxStep}
-            labels={state.accountType === 'company' ? COMPANY_LABELS : WORKER_LABELS}
+            labels={state.accountType === 'company' ? (isFlexi ? COMPANY_LABELS_FLEXI : COMPANY_LABELS) : WORKER_LABELS}
           />
         </div>
 
@@ -135,7 +141,7 @@ export default function App() {
           )}
           {step === 3 && state.accountType === 'company' && (
             <StepImportJobOffer
-              onParsed={data => update({ parsedJob: data, jobTitle: data.jobTitle ?? '', specialty: resolveSpecialty(data.specialty ?? ''), jobSkills: data.skills ?? [], jobLocation: data.location ?? '', workMode: data.workMode ?? 'hybrid', jobLanguages: data.languages ?? [], companyName: data.companyName ?? '', companyAddress: data.companyAddress ?? '', contractType: data.contractType ?? null })}
+              onParsed={data => update({ parsedJob: data, jobCategory: data.jobCategory ?? 'permanent_freelance', jobTitle: data.jobTitle ?? '', specialty: resolveSpecialty(data.specialty ?? ''), jobSkills: data.skills ?? [], jobLocation: data.location ?? '', workMode: data.workMode ?? 'hybrid', jobLanguages: data.languages ?? [], companyName: data.companyName ?? '', companyAddress: data.companyAddress ?? '', contractType: data.contractType ?? null })}
               onNext={next}
             />
           )}
@@ -146,13 +152,21 @@ export default function App() {
               onChange={(title, specialty) => update({ jobTitle: title, specialty })}
             />
           )}
-          {step === 5 && state.accountType === 'company' && (
+          {/* Company flow – step 5+ branches on jobCategory */}
+          {step === 5 && state.accountType === 'company' && isFlexi && (
+            <StepSignup initialEmail={state.email} onValidChange={setSignupValid} onSocialLogin={next} />
+          )}
+          {step === 6 && state.accountType === 'company' && isFlexi && (
+            <StepDone accountType={state.accountType} firstName={state.firstName}
+              onRestart={() => { setState(INITIAL); setStep(1) }} />
+          )}
+          {step === 5 && state.accountType === 'company' && !isFlexi && (
             <StepAIExtract
               initialSkills={state.jobSkills.length ? state.jobSkills : (state.parsedJob?.skills ?? [])}
               onChange={skills => update({ jobSkills: skills })}
             />
           )}
-          {step === 6 && state.accountType === 'company' && (
+          {step === 6 && state.accountType === 'company' && !isFlexi && (
             <StepJobPreferences
               experienceLevel={state.experienceLevel}
               salary={state.salary}
@@ -162,7 +176,7 @@ export default function App() {
               onContract={v => update({ contractType: v })}
             />
           )}
-          {step === 7 && state.accountType === 'company' && (
+          {step === 7 && state.accountType === 'company' && !isFlexi && (
             <StepWorkConditions
               jobLocation={state.jobLocation}
               workMode={state.workMode}
@@ -172,13 +186,13 @@ export default function App() {
               onLanguages={v => update({ jobLanguages: v })}
             />
           )}
-          {step === 8 && state.accountType === 'company' && (
+          {step === 8 && state.accountType === 'company' && !isFlexi && (
             <StepSignup initialEmail={state.email} onValidChange={setSignupValid} onSocialLogin={next} />
           )}
-          {step === 9 && state.accountType === 'company' && (
+          {step === 9 && state.accountType === 'company' && !isFlexi && (
             <StepPricing />
           )}
-          {step === 10 && state.accountType === 'company' && (
+          {step === 10 && state.accountType === 'company' && !isFlexi && (
             <StepDone accountType={state.accountType} firstName={state.firstName}
               onRestart={() => { setState(INITIAL); setStep(1) }} />
           )}
@@ -200,6 +214,7 @@ export default function App() {
         confirmDisabled={
           step === 4 && state.accountType === 'worker' ? !signupValid :
           step === 4 ? (!state.jobTitle.trim() || !state.specialty) :
+          step === 5 && isFlexi ? !signupValid :
           step === 5 ? state.jobSkills.length === 0 :
           step === 6 ? !state.contractType :
           step === 8 ? !signupValid :

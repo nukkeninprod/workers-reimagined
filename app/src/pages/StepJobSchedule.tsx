@@ -117,10 +117,10 @@ export function StepJobSchedule({
     <div className="w-full max-w-3xl mx-auto px-4 pb-12">
       {mode === 'review' ? (
         <>
-          <h2 className="text-3xl font-bold text-slate-900 text-center mb-2 tracking-tight">Are these hours correct?</h2>
+          <h2 className="text-3xl font-bold text-slate-900 text-center mb-2 tracking-tight">Are these dates and shifts correct?</h2>
 
           {/* Grouped data card */}
-          <div className="relative bg-slate-50 border border-slate-200/60 rounded-2xl p-6 sm:p-8 mb-6">
+          <div className="relative rounded-2xl p-6 sm:p-8 mb-6">
 
             {/* Modify CTA (top right) */}
             <button onClick={() => setMode('edit')}
@@ -152,7 +152,7 @@ export function StepJobSchedule({
                 {DAYS.map(d => {
                   const active = typicalWeek.includes(d.key)
                   return active ? (
-                    <span key={d.key} className="px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500 text-white shadow-md shadow-emerald-500/20 ring-2 ring-emerald-500 ring-offset-2 ring-offset-slate-50">
+                    <span key={d.key} className="px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500 text-white shadow-md shadow-emerald-500/20 ring-2 ring-emerald-500 ring-offset-2 ring-offset-white">
                       {d.short}
                     </span>
                   ) : (

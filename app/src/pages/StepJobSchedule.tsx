@@ -50,6 +50,34 @@ export function StepJobSchedule({
   const [mode, setMode] = useState<'review' | 'edit'>(detected ? 'review' : 'edit')
   const [editingShift, setEditingShift] = useState<{ day: DayKey; idx: number } | null>(null)
 
+  // draft state for the modal
+  const [draft, setDraft] = useState<Shift>(DEFAULT_SHIFT)
+
+  function openShiftModal(day: DayKey, idx: number) {
+    const s = shiftsByDay[day]?.[idx] ?? DEFAULT_SHIFT
+    setDraft({ ...s })
+    setEditingShift({ day, idx })
+  }
+
+  function openNewShiftModal(day: DayKey) {
+    addShift(day)
+    const idx = (shiftsByDay[day] ?? []).length
+    setDraft({ ...DEFAULT_SHIFT })
+    setEditingShift({ day, idx })
+  }
+
+  function saveShiftModal() {
+    if (!editingShift) return
+    updateShift(editingShift.day, editingShift.idx, draft)
+    setEditingShift(null)
+  }
+
+  function deleteShiftModal() {
+    if (!editingShift) return
+    removeShift(editingShift.day, editingShift.idx)
+    setEditingShift(null)
+  }
+
   const start = startDate ? new Date(startDate) : null
   const end = endDate ? new Date(endDate) : null
 
@@ -186,50 +214,25 @@ export function StepJobSchedule({
                         <div className="w-32 font-medium text-slate-700 pt-1.5 mb-2 sm:mb-0">{d.long}</div>
                         <div className="flex flex-wrap gap-2 flex-1">
                           {(shiftsByDay[d.key] ?? []).length === 0 && (
-                            <button onClick={() => { addShift(d.key); setEditingShift({ day: d.key, idx: 0 }) }}
+                            <button onClick={() => openNewShiftModal(d.key)}
                               className="text-xs text-slate-400 italic hover:text-brand transition-colors">
                               + Add shift
                             </button>
                           )}
                           {(shiftsByDay[d.key] ?? []).map((s, i) => (
-                            editingShift?.day === d.key && editingShift?.idx === i ? (
-                              // Inline editor
-                              <div key={i} className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
-                                <input type="time" value={s.start}
-                                  onChange={e => updateShift(d.key, i, { start: e.target.value })}
-                                  className="bg-white border border-slate-200 rounded-md px-2 py-1 text-xs font-medium text-slate-700 outline-none focus:border-brand w-20" />
-                                <span className="text-slate-300 text-xs">→</span>
-                                <input type="time" value={s.end}
-                                  onChange={e => updateShift(d.key, i, { end: e.target.value })}
-                                  className="bg-white border border-slate-200 rounded-md px-2 py-1 text-xs font-medium text-slate-700 outline-none focus:border-brand w-20" />
-                                <Users size={12} className="text-slate-400 ml-1" />
-                                <input type="number" min={1} value={s.people}
-                                  onChange={e => updateShift(d.key, i, { people: Math.max(1, +e.target.value || 1) })}
-                                  className="bg-white border border-slate-200 rounded-md px-2 py-1 text-xs font-medium text-slate-700 outline-none focus:border-brand w-12" />
-                                <button onClick={() => setEditingShift(null)}
-                                  className="ml-1 w-6 h-6 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center flex-shrink-0">
-                                  <Check size={12} strokeWidth={3} />
-                                </button>
-                                <button onClick={() => { removeShift(d.key, i); setEditingShift(null) }}
-                                  className="w-6 h-6 rounded-full hover:bg-red-100 text-slate-400 hover:text-red-500 flex items-center justify-center flex-shrink-0">
-                                  <X size={12} strokeWidth={2.5} />
-                                </button>
-                              </div>
-                            ) : (
-                              // Read chip (clickable)
-                              <button key={i} onClick={() => setEditingShift({ day: d.key, idx: i })}
-                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20 hover:bg-emerald-100 transition-colors">
-                                <Clock size={14} className="text-emerald-500" /> {s.start} – {s.end}
-                                <span className="text-emerald-300">|</span>
-                                <Users size={14} className="text-emerald-600" /> {s.people}
-                                {s.breakMin > 0 && (<><span className="text-emerald-300">|</span> {s.breakMin}m</>)}
-                                <Pencil size={11} className="text-emerald-400 ml-0.5" />
-                              </button>
-                            )
+                            // Chip — click opens modal
+                            <button key={i} onClick={() => openShiftModal(d.key, i)}
+                              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20 hover:bg-emerald-100 transition-colors">
+                              <Clock size={14} className="text-emerald-500" /> {s.start} – {s.end}
+                              <span className="text-emerald-300">|</span>
+                              <Users size={14} className="text-emerald-600" /> {s.people}
+                              {s.breakMin > 0 && (<><span className="text-emerald-300">|</span> {s.breakMin}m</>)}
+                              <Pencil size={11} className="text-emerald-400 ml-0.5" />
+                            </button>
                           ))}
                           {/* Add shift button */}
                           {(shiftsByDay[d.key] ?? []).length > 0 && (
-                            <button onClick={() => { const ni = (shiftsByDay[d.key] ?? []).length; addShift(d.key); setEditingShift({ day: d.key, idx: ni }) }}
+                            <button onClick={() => openNewShiftModal(d.key)}
                               className="w-7 h-7 rounded-full border-2 border-dashed border-slate-300 hover:border-brand text-slate-400 hover:text-brand flex items-center justify-center transition-colors">
                               <Plus size={13} strokeWidth={2.5} />
                             </button>
@@ -375,6 +378,66 @@ export function StepJobSchedule({
       )}
         </>
       )}
+
+      {/* Shift edit modal */}
+      {editingShift && (() => {
+        const dayLabel = DAYS.find(d => d.key === editingShift.day)?.long ?? ''
+        return (
+          <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
+            onClick={() => setEditingShift(null)}>
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-0.5">Edit shift</p>
+                  <h3 className="text-lg font-bold text-slate-900">{dayLabel}</h3>
+                </div>
+                <button onClick={() => setEditingShift(null)} className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400">
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Time range */}
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-slate-500 mb-2 flex items-center gap-1.5"><Clock size={12} /> Hours</p>
+                <div className="flex items-center gap-3">
+                  <input type="time" value={draft.start}
+                    onChange={e => setDraft(d => ({ ...d, start: e.target.value }))}
+                    className="flex-1 bg-slate-50 border-2 border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-brand" />
+                  <span className="text-slate-300 font-bold">→</span>
+                  <input type="time" value={draft.end}
+                    onChange={e => setDraft(d => ({ ...d, end: e.target.value }))}
+                    className="flex-1 bg-slate-50 border-2 border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-brand" />
+                </div>
+              </div>
+
+              {/* People */}
+              <div className="mb-6">
+                <p className="text-xs font-semibold text-slate-500 mb-2 flex items-center gap-1.5"><Users size={12} /> Number of people</p>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setDraft(d => ({ ...d, people: Math.max(1, d.people - 1) }))}
+                    className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-lg flex items-center justify-center">−</button>
+                  <span className="flex-1 text-center text-xl font-bold text-slate-900">{draft.people}</span>
+                  <button onClick={() => setDraft(d => ({ ...d, people: d.people + 1 }))}
+                    className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-lg flex items-center justify-center">+</button>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2">
+                <button onClick={deleteShiftModal}
+                  className="px-4 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 border border-red-100 transition-colors">
+                  Delete
+                </button>
+                <button onClick={saveShiftModal}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-brand hover:bg-brand-dark shadow-md shadow-brand/25 transition-all">
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* All shifts modal */}
       {showAll && (

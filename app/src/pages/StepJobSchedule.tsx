@@ -174,7 +174,7 @@ export function StepJobSchedule({
           <div className="relative rounded-2xl p-6 sm:p-8 mb-6">
 
             {/* Two segments: Job dates + Working days */}
-            <div className="flex flex-col gap-5 mb-0">
+            <div className="grid grid-cols-2 gap-8 mb-0">
               {/* Segment 1: Select job dates */}
               <div>
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-2">

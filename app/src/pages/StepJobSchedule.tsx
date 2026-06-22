@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Calendar, Clock, Users, Coffee, X, Plus, Copy, List, Sparkles, CalendarPlus } from 'lucide-react'
+import { Calendar, Clock, Users, Coffee, X, Plus, Copy, List, CalendarPlus } from 'lucide-react'
 
 export type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun'
 export interface Shift { start: string; end: string; people: number; breakMin: number }
@@ -116,13 +116,8 @@ export function StepJobSchedule({
     <div className="w-full max-w-3xl mx-auto px-4 pt-8 pb-12">
       {detected ? (
         <>
-          <div className="flex justify-center mb-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 text-xs font-bold">
-              <Sparkles size={13} /> Detected from your job offer
-            </div>
-          </div>
           <h2 className="text-3xl font-bold text-slate-900 text-center mb-2">Are these hours correct?</h2>
-          <p className="text-sm text-slate-500 text-center mb-8">We pre-filled the schedule from your offer — review and tweak below.</p>
+          <p className="text-sm text-slate-500 text-center mb-8">Review and tweak the schedule below.</p>
         </>
       ) : (
         <>

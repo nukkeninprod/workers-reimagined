@@ -413,13 +413,25 @@ export function StepJobSchedule({
               </div>
 
               {/* People */}
-              <div className="mb-6">
+              <div className="mb-4">
                 <p className="text-xs font-semibold text-slate-500 mb-2 flex items-center gap-1.5"><Users size={12} /> Number of people</p>
                 <div className="flex items-center gap-3">
                   <button onClick={() => setDraft(d => ({ ...d, people: Math.max(1, d.people - 1) }))}
                     className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-lg flex items-center justify-center">−</button>
                   <span className="flex-1 text-center text-xl font-bold text-slate-900">{draft.people}</span>
                   <button onClick={() => setDraft(d => ({ ...d, people: d.people + 1 }))}
+                    className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-lg flex items-center justify-center">+</button>
+                </div>
+              </div>
+
+              {/* Break */}
+              <div className="mb-6">
+                <p className="text-xs font-semibold text-slate-500 mb-2 flex items-center gap-1.5"><Coffee size={12} /> Break (minutes)</p>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setDraft(d => ({ ...d, breakMin: Math.max(0, d.breakMin - 5) }))}
+                    className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-lg flex items-center justify-center">−</button>
+                  <span className="flex-1 text-center text-xl font-bold text-slate-900">{draft.breakMin}<span className="text-base font-medium text-slate-400 ml-1">min</span></span>
+                  <button onClick={() => setDraft(d => ({ ...d, breakMin: d.breakMin + 5 }))}
                     className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-lg flex items-center justify-center">+</button>
                 </div>
               </div>

@@ -118,15 +118,20 @@ export function StepJobSchedule({
       {mode === 'review' ? (
         <>
           <h2 className="text-3xl font-bold text-slate-900 text-center mb-2 tracking-tight">Are these hours correct?</h2>
-          <p className="text-sm text-slate-500 text-center mb-8">Review the schedule we detected. You can modify it if needed.</p>
 
           {/* Grouped data card */}
-          <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-6 sm:p-8 mb-6">
+          <div className="relative bg-slate-50 border border-slate-200/60 rounded-2xl p-6 sm:p-8 mb-6">
+
+            {/* Modify CTA (top right) */}
+            <button onClick={() => setMode('edit')}
+              className="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-brand hover:bg-brand-dark text-white text-xs font-semibold shadow-md shadow-brand/25 transition-all hover:scale-105">
+              <Pencil size={13} /> Modify
+            </button>
 
             {/* Period */}
             {start && end && (
               <>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between pr-28">
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                     <Calendar size={14} /> Period
                   </h3>
@@ -204,14 +209,6 @@ export function StepJobSchedule({
                 </div>
               </>
             )}
-          </div>
-
-          {/* Modify CTA */}
-          <div className="flex justify-center">
-            <button onClick={() => setMode('edit')}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-all">
-              <Pencil size={14} /> Modify hours
-            </button>
           </div>
         </>
       ) : (

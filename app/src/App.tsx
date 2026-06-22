@@ -155,7 +155,10 @@ export default function App() {
             <StepImportJobOffer
               onParsed={data => {
                 const sched = data.schedule
-                const hasSched = !!sched && (!!sched.startDate || !!sched.endDate || (sched.workingDays?.length ?? 0) > 0 || !!sched.dailyStart || !!sched.dailyEnd)
+                const workingDays = (sched?.workingDays ?? []) as ('mon'|'tue'|'wed'|'thu'|'fri'|'sat'|'sun')[]
+                const shiftsMap = sched?.shifts ?? null
+                const hasShifts = shiftsMap && Object.keys(shiftsMap).length > 0
+                const hasSched = !!sched && (!!sched.startDate || !!sched.endDate || workingDays.length > 0 || hasShifts)
                 const updates: Partial<OnboardingState> = {
                   parsedJob: data,
                   jobCategory: data.jobCategory ?? 'permanent_freelance',
@@ -173,12 +176,17 @@ export default function App() {
                 if (hasSched && sched) {
                   if (sched.startDate) updates.jobStartDate = sched.startDate
                   if (sched.endDate) updates.jobEndDate = sched.endDate
-                  if (sched.workingDays && sched.workingDays.length > 0) updates.typicalWeek = sched.workingDays
-                  if (sched.dailyStart && sched.dailyEnd) {
-                    const days = (sched.workingDays && sched.workingDays.length > 0) ? sched.workingDays : (['mon','tue','wed','thu','fri'] as const)
-                    const shifts: Record<string, { start: string; end: string; people: number; breakMin: number }[]> = {}
-                    days.forEach(d => { shifts[d] = [{ start: sched.dailyStart!, end: sched.dailyEnd!, people: 1, breakMin: 0 }] })
-                    updates.shiftsByDay = shifts
+                  // Derive typical week: union of explicit workingDays + keys of shifts map
+                  const week = new Set<string>(workingDays)
+                  if (shiftsMap) Object.keys(shiftsMap).forEach(k => week.add(k))
+                  if (week.size > 0) updates.typicalWeek = Array.from(week) as typeof workingDays
+                  // Build shiftsByDay
+                  if (hasShifts) {
+                    const built: Record<string, { start: string; end: string; people: number; breakMin: number }[]> = {}
+                    Object.entries(shiftsMap!).forEach(([day, list]) => {
+                      built[day] = (list ?? []).map(s => ({ start: s.start, end: s.end, people: 1, breakMin: 0 }))
+                    })
+                    updates.shiftsByDay = built
                   }
                 }
                 update(updates)

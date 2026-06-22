@@ -6,8 +6,7 @@ export interface ParsedSchedule {
   startDate: string | null   // ISO 'YYYY-MM-DD'
   endDate: string | null
   workingDays: DayKey[]      // [] if not specified
-  dailyStart: string | null  // 'HH:MM'
-  dailyEnd: string | null
+  shifts: Partial<Record<DayKey, { start: string; end: string }[]>> | null
 }
 
 export interface ParsedJobData {

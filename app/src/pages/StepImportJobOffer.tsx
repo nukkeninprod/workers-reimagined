@@ -26,8 +26,7 @@ const SYSTEM_PROMPT = `You are a job offer parser. Extract structured data from 
     "startDate": "YYYY-MM-DD or null (extract only if a clear start date is mentioned; today is 2026-06-22 — resolve relative dates like 'starting July' → 2026-07-01)",
     "endDate": "YYYY-MM-DD or null (extract only if a clear end date or duration is mentioned; if 'for 2 months' from July, compute 2026-08-31)",
     "workingDays": "array of day keys (mon|tue|wed|thu|fri|sat|sun) — include a day only if explicitly mentioned (e.g. 'Mon-Fri' → [mon,tue,wed,thu,fri]; 'weekends' → [sat,sun]); empty array if not specified",
-    "dailyStart": "HH:MM or null (start hour if a uniform daily start is mentioned, e.g. '9am-5pm' → 09:00)",
-    "dailyEnd": "HH:MM or null (end hour if mentioned, e.g. '9am-5pm' → 17:00)"
+    "shifts": "object mapping day key → array of {start: HH:MM, end: HH:MM} — EXTRACT AGGRESSIVELY. Examples: 'Mon-Fri 9am-5pm' → {mon:[{start:'09:00',end:'17:00'}], tue:[...], ...}. 'lunch service 11h-15h and dinner 18h-23h' → each working day gets both shifts. 'weekends 14h-22h' → sat & sun each with that shift. If a single uniform time range is mentioned (e.g. '9 to 5' or 'shifts of 8h'), apply it to all workingDays. If hours mentioned but no specific days, still populate workingDays default (mon-fri for office; sat-sun for events; mon-sun for hospitality). Return null ONLY if absolutely no time range can be inferred. Always include all referenced working days as keys."
   }
 }
 Return ONLY the JSON object, no explanation, no markdown.`
@@ -51,7 +50,7 @@ export function StepImportJobOffer({ onParsed, onNext }: Props) {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-haiku-4-5',
-          max_tokens: 1024,
+          max_tokens: 2048,
           system: SYSTEM_PROMPT,
           messages: [{ role: 'user', content: textInput || `Job listing URL: ${urlInput}` }],
         }),

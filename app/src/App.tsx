@@ -301,7 +301,7 @@ export default function App() {
           step === 4 ? (!state.jobTitle.trim() || !state.specialty) :
           step === 5 && isFlexi ? state.jobSkills.length === 0 :
           step === 6 && isFlexi ? !state.contractType :
-          step === 7 && isFlexi ? (!state.jobStartDate || !state.jobEndDate || state.typicalWeek.length === 0) :
+          step === 7 && isFlexi ? false :
           step === 8 && isFlexi ? !signupValid :
           step === 5 ? state.jobSkills.length === 0 :
           step === 6 ? !state.contractType :

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import type { OnboardingState } from './types/onboarding'
 import { Header } from './components/Header'
-import { Footer } from './components/Footer'
 import { ProgressBar } from './components/ProgressBar'
 import { Background } from './components/Background'
 import { NavButtons } from './components/NavButtons'
@@ -11,20 +10,19 @@ import { StepJobOffer } from './pages/StepJobOffer'
 import { StepWorkerProfile } from './pages/StepWorkerProfile'
 import { StepImportJobOffer } from './pages/StepImportJobOffer'
 import { StepAIExtract } from './pages/StepAIExtract'
-import { StepConfirmExperience } from './pages/StepConfirmExperience'
-import { StepSalary } from './pages/StepSalary'
-import { StepContractType } from './pages/StepContractType'
-import { StepCompanyDetails } from './pages/StepCompanyDetails'
-import { StepCompanyDescription } from './pages/StepCompanyDescription'
-import { StepLogo } from './pages/StepLogo'
-import { StepLegal } from './pages/StepLegal'
+import { StepConfirmJobTitle } from './pages/StepConfirmJobTitle'
+import { StepJobPreferences } from './pages/StepJobPreferences'
+import { StepWorkConditions } from './pages/StepWorkConditions'
+import { StepSignup } from './pages/StepSignup'
+import { StepPricing } from './pages/StepPricing'
 import { StepDone } from './pages/StepDone'
+import { resolveSpecialty } from './data/domains'
 
-const TOTAL_WORKER = 4
-const TOTAL_COMPANY = 12
+const TOTAL_WORKER = 5
+const TOTAL_COMPANY = 10
 
-const WORKER_LABELS = ['Account type', 'Your details', 'Your profile', 'Done!']
-const COMPANY_LABELS = ['Account', 'Method', 'Import', 'AI Review', 'Experience', 'Salary', 'Contract', 'Company', 'Description', 'Logo', 'Legal', 'Done']
+const WORKER_LABELS = ['Account type', 'Your details', 'Your profile', 'Sign up', 'Done!']
+const COMPANY_LABELS = ['Account', 'Method', 'Import', 'Role', 'Skills', 'Preferences', 'Conditions', 'Sign up', 'Pricing', 'Done']
 
 const INITIAL: OnboardingState = {
   accountType: null,
@@ -32,7 +30,12 @@ const INITIAL: OnboardingState = {
   workTypes: [], skills: [],
   jobOfferMode: null,
   parsedJob: null,
+  jobTitle: '',
+  specialty: '',
   jobSkills: [],
+  jobLocation: '',
+  workMode: 'hybrid',
+  jobLanguages: [],
   experienceLevel: 'medior',
   salary: 3292,
   contractType: null,
@@ -46,7 +49,7 @@ const INITIAL: OnboardingState = {
 export default function App() {
   const [step, setStep] = useState(1)
   const [state, setState] = useState<OnboardingState>(INITIAL)
-  const [agreeMarketing, setAgreeMarketing] = useState(false)
+  const [signupValid, setSignupValid] = useState(false)
 
   function update(fields: Partial<OnboardingState>) {
     setState(s => ({ ...s, ...fields }))
@@ -91,6 +94,7 @@ export default function App() {
             opacity: visible ? 1 : 0,
             transform: visible ? 'translateY(0)' : 'translateY(8px)',
             transition: 'opacity 0.26s ease, transform 0.26s ease',
+            zoom: (state.accountType === 'company' && step >= 4 && step <= 7) ? 1.13 : 1,
           }}
         >
 
@@ -117,6 +121,9 @@ export default function App() {
             />
           )}
           {step === 4 && state.accountType === 'worker' && (
+            <StepSignup initialEmail={state.email} onValidChange={setSignupValid} />
+          )}
+          {step === 5 && state.accountType === 'worker' && (
             <StepDone accountType={state.accountType} firstName={state.firstName}
               onRestart={() => { setState(INITIAL); setStep(1) }} />
           )}
@@ -127,67 +134,51 @@ export default function App() {
               onSelect={mode => { update({ jobOfferMode: mode }); next() }} />
           )}
           {step === 3 && state.accountType === 'company' && (
-            <StepImportJobOffer onNext={next} />
+            <StepImportJobOffer
+              onParsed={data => update({ parsedJob: data, jobTitle: data.jobTitle ?? '', specialty: resolveSpecialty(data.specialty ?? ''), jobSkills: data.skills ?? [], jobLocation: data.location ?? '', workMode: data.workMode ?? 'hybrid', jobLanguages: data.languages ?? [], companyName: data.companyName ?? '', companyAddress: data.companyAddress ?? '', contractType: data.contractType ?? null })}
+              onNext={next}
+            />
           )}
           {step === 4 && state.accountType === 'company' && (
-            <StepAIExtract
-              initialSkills={state.parsedJob?.skills ?? []}
-              onConfirm={skills => update({ jobSkills: skills })}
-              onNext={next}
+            <StepConfirmJobTitle
+              initialTitle={state.jobTitle}
+              initialSpecialty={state.specialty}
+              onChange={(title, specialty) => update({ jobTitle: title, specialty })}
             />
           )}
           {step === 5 && state.accountType === 'company' && (
-            <StepConfirmExperience
-              value={state.experienceLevel}
-              onChange={v => update({ experienceLevel: v })}
-              onNext={next}
+            <StepAIExtract
+              initialSkills={state.jobSkills.length ? state.jobSkills : (state.parsedJob?.skills ?? [])}
+              onChange={skills => update({ jobSkills: skills })}
             />
           )}
           {step === 6 && state.accountType === 'company' && (
-            <StepSalary
-              value={state.salary}
-              onChange={v => update({ salary: v })}
-              onNext={next}
+            <StepJobPreferences
+              experienceLevel={state.experienceLevel}
+              salary={state.salary}
+              contractType={state.contractType}
+              onExperience={v => update({ experienceLevel: v })}
+              onSalary={v => update({ salary: v })}
+              onContract={v => update({ contractType: v })}
             />
           )}
           {step === 7 && state.accountType === 'company' && (
-            <StepContractType
-              value={state.contractType}
-              onChange={v => update({ contractType: v })}
-              onNext={next}
+            <StepWorkConditions
+              jobLocation={state.jobLocation}
+              workMode={state.workMode}
+              jobLanguages={state.jobLanguages}
+              onLocation={v => update({ jobLocation: v })}
+              onWorkMode={v => update({ workMode: v })}
+              onLanguages={v => update({ jobLanguages: v })}
             />
           )}
           {step === 8 && state.accountType === 'company' && (
-            <StepCompanyDetails
-              companyName={state.companyName} companyAddress={state.companyAddress}
-              companyVAT={state.companyVAT} companyWebsite={state.companyWebsite}
-              sector={state.sector}
-              onChange={(field, value) => update({ [field]: value })}
-              onNext={next}
-            />
+            <StepSignup initialEmail={state.email} onValidChange={setSignupValid} onSocialLogin={next} />
           )}
           {step === 9 && state.accountType === 'company' && (
-            <StepCompanyDescription
-              value={state.companyDescription}
-              onChange={v => update({ companyDescription: v })}
-              onNext={next}
-            />
+            <StepPricing />
           )}
           {step === 10 && state.accountType === 'company' && (
-            <StepLogo onNext={next} />
-          )}
-          {step === 11 && state.accountType === 'company' && (
-            <StepLegal
-              agreeFees={state.agreeFees} agreeTerms={state.agreeTerms}
-              agreeMarketing={agreeMarketing}
-              onChange={(field, v) => {
-                if (field === 'agreeMarketing') setAgreeMarketing(v)
-                else update({ [field]: v as boolean })
-              }}
-              onNext={next}
-            />
-          )}
-          {step === 12 && state.accountType === 'company' && (
             <StepDone accountType={state.accountType} firstName={state.firstName}
               onRestart={() => { setState(INITIAL); setStep(1) }} />
           )}
@@ -195,14 +186,25 @@ export default function App() {
         </div>
       </main>
 
-      <Footer />
-
       <NavButtons
         onNext={next}
         onBack={back}
         showBack={step > 1}
         nextLabel="Continue"
         hideNext={true}
+        onConfirm={
+          (state.accountType === 'worker' && step >= 2 && step <= 4) ||
+          (state.accountType === 'company' && step >= 4 && step <= 9)
+            ? next : undefined
+        }
+        confirmDisabled={
+          step === 4 && state.accountType === 'worker' ? !signupValid :
+          step === 4 ? (!state.jobTitle.trim() || !state.specialty) :
+          step === 5 ? state.jobSkills.length === 0 :
+          step === 6 ? !state.contractType :
+          step === 8 ? !signupValid :
+          false
+        }
       />
     </div>
   )

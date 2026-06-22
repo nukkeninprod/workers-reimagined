@@ -48,6 +48,7 @@ export function StepJobSchedule({
 }: Props) {
   const [showAll, setShowAll] = useState(false)
   const [mode, setMode] = useState<'review' | 'edit'>(detected ? 'review' : 'edit')
+  const [editingShift, setEditingShift] = useState<{ day: DayKey; idx: number } | null>(null)
 
   const start = startDate ? new Date(startDate) : null
   const end = endDate ? new Date(endDate) : null
@@ -181,20 +182,58 @@ export function StepJobSchedule({
                   </div>
                   <div>
                     {DAYS.filter(d => typicalWeek.includes(d.key)).map((d, idx) => (
-                      <div key={d.key} className={`flex flex-col sm:flex-row sm:items-center py-3 ${idx > 0 ? 'border-t border-slate-200/70' : ''}`}>
-                        <div className="w-32 font-medium text-slate-700 mb-2 sm:mb-0">{d.long}</div>
+                      <div key={d.key} className={`flex flex-col sm:flex-row sm:items-start py-3 ${idx > 0 ? 'border-t border-slate-200/70' : ''}`}>
+                        <div className="w-32 font-medium text-slate-700 pt-1.5 mb-2 sm:mb-0">{d.long}</div>
                         <div className="flex flex-wrap gap-2 flex-1">
                           {(shiftsByDay[d.key] ?? []).length === 0 && (
-                            <span className="text-xs text-slate-400 italic">No shift</span>
+                            <button onClick={() => { addShift(d.key); setEditingShift({ day: d.key, idx: 0 }) }}
+                              className="text-xs text-slate-400 italic hover:text-brand transition-colors">
+                              + Add shift
+                            </button>
                           )}
                           {(shiftsByDay[d.key] ?? []).map((s, i) => (
-                            <span key={i} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
-                              <Clock size={14} className="text-emerald-500" /> {s.start} – {s.end}
-                              <span className="text-emerald-300">|</span>
-                              <Users size={14} className="text-emerald-600" /> {s.people}
-                              {s.breakMin > 0 && (<><span className="text-emerald-300">|</span> {s.breakMin}m</>)}
-                            </span>
+                            editingShift?.day === d.key && editingShift?.idx === i ? (
+                              // Inline editor
+                              <div key={i} className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
+                                <input type="time" value={s.start}
+                                  onChange={e => updateShift(d.key, i, { start: e.target.value })}
+                                  className="bg-white border border-slate-200 rounded-md px-2 py-1 text-xs font-medium text-slate-700 outline-none focus:border-brand w-20" />
+                                <span className="text-slate-300 text-xs">→</span>
+                                <input type="time" value={s.end}
+                                  onChange={e => updateShift(d.key, i, { end: e.target.value })}
+                                  className="bg-white border border-slate-200 rounded-md px-2 py-1 text-xs font-medium text-slate-700 outline-none focus:border-brand w-20" />
+                                <Users size={12} className="text-slate-400 ml-1" />
+                                <input type="number" min={1} value={s.people}
+                                  onChange={e => updateShift(d.key, i, { people: Math.max(1, +e.target.value || 1) })}
+                                  className="bg-white border border-slate-200 rounded-md px-2 py-1 text-xs font-medium text-slate-700 outline-none focus:border-brand w-12" />
+                                <button onClick={() => setEditingShift(null)}
+                                  className="ml-1 w-6 h-6 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center flex-shrink-0">
+                                  <Check size={12} strokeWidth={3} />
+                                </button>
+                                <button onClick={() => { removeShift(d.key, i); setEditingShift(null) }}
+                                  className="w-6 h-6 rounded-full hover:bg-red-100 text-slate-400 hover:text-red-500 flex items-center justify-center flex-shrink-0">
+                                  <X size={12} strokeWidth={2.5} />
+                                </button>
+                              </div>
+                            ) : (
+                              // Read chip (clickable)
+                              <button key={i} onClick={() => setEditingShift({ day: d.key, idx: i })}
+                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20 hover:bg-emerald-100 transition-colors">
+                                <Clock size={14} className="text-emerald-500" /> {s.start} – {s.end}
+                                <span className="text-emerald-300">|</span>
+                                <Users size={14} className="text-emerald-600" /> {s.people}
+                                {s.breakMin > 0 && (<><span className="text-emerald-300">|</span> {s.breakMin}m</>)}
+                                <Pencil size={11} className="text-emerald-400 ml-0.5" />
+                              </button>
+                            )
                           ))}
+                          {/* Add shift button */}
+                          {(shiftsByDay[d.key] ?? []).length > 0 && (
+                            <button onClick={() => { const ni = (shiftsByDay[d.key] ?? []).length; addShift(d.key); setEditingShift({ day: d.key, idx: ni }) }}
+                              className="w-7 h-7 rounded-full border-2 border-dashed border-slate-300 hover:border-brand text-slate-400 hover:text-brand flex items-center justify-center transition-colors">
+                              <Plus size={13} strokeWidth={2.5} />
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}

@@ -171,7 +171,7 @@ export function StepJobSchedule({
           <h2 className="text-3xl font-bold text-slate-900 text-center mb-2 tracking-tight">Are these dates and shifts correct?</h2>
 
           {/* Grouped data card */}
-          <div className="relative rounded-2xl p-6 sm:p-8 mb-6">
+          <div className="relative rounded-2xl p-7 sm:p-9 mb-6 scale-[1.1] origin-top">
 
             {/* Two segments: Job dates + Working days */}
             <div className="grid grid-cols-[auto_1fr] gap-8 mb-0">

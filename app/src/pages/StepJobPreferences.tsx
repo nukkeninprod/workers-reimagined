@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react'
-import { Briefcase, Clock, GraduationCap, Zap } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Briefcase, Clock, GraduationCap, Zap, X, Plus } from 'lucide-react'
+
+const COMMON_LANGS = ['French', 'Dutch', 'English', 'German', 'Spanish', 'Italian']
 
 const LEVELS = [
   { value: 'junior', label: 'Junior', sub: '0 – 2 yrs' },
@@ -29,12 +31,16 @@ interface Props {
   salary: number
   contractType: 'permanent' | 'freelance' | 'flexi' | 'student' | null
   jobCategory?: 'student_flexi' | 'permanent_freelance' | null
+  jobLocation?: string
+  jobLanguages?: string[]
   onExperience: (v: string) => void
   onSalary: (v: number) => void
   onContract: (v: 'permanent' | 'freelance' | 'flexi' | 'student') => void
+  onLocation?: (v: string) => void
+  onLanguages?: (v: string[]) => void
 }
 
-export function StepJobPreferences({ experienceLevel, salary, contractType, jobCategory, onExperience, onSalary, onContract }: Props) {
+export function StepJobPreferences({ experienceLevel, salary, contractType, jobCategory, jobLocation, jobLanguages, onExperience, onSalary, onContract, onLocation, onLanguages }: Props) {
   const isFlexi = jobCategory === 'student_flexi'
   const contracts = isFlexi ? FLEXI_CONTRACTS : PERM_CONTRACTS
   // If arriving on this step with a perm/freelance contractType from Claude but we're on flexi route, ignore it
@@ -44,6 +50,20 @@ export function StepJobPreferences({ experienceLevel, salary, contractType, jobC
   const cfg = SALARY_CONFIG[effectiveContract ?? (isFlexi ? 'flexi' : 'permanent')]
   const [localSalary, setLocalSalary] = useState(salary || cfg.default)
   const selected = experienceLevel || 'medior'
+  const [langInput, setLangInput] = useState('')
+  const langRef = useRef<HTMLInputElement>(null)
+
+  function addLang(lang?: string) {
+    const val = (lang ?? langInput).trim()
+    if (val && onLanguages && jobLanguages && !jobLanguages.map(l => l.toLowerCase()).includes(val.toLowerCase())) {
+      onLanguages([...jobLanguages, val])
+    }
+    setLangInput('')
+    langRef.current?.focus()
+  }
+  function removeLang(lang: string) {
+    if (onLanguages && jobLanguages) onLanguages(jobLanguages.filter(l => l !== lang))
+  }
 
   // Reset slider when contract type changes
   useEffect(() => {
@@ -137,6 +157,56 @@ export function StepJobPreferences({ experienceLevel, salary, contractType, jobC
           <span>€{cfg.max.toLocaleString('fr-BE')}</span>
         </div>
       </div>
+
+      {/* Location & Languages — flexi route only */}
+      {isFlexi && onLocation && (
+        <div>
+          <p className="text-xs font-semibold text-slate-700 uppercase tracking-widest mb-3">Location</p>
+          <input
+            type="text"
+            placeholder="City, Belgium"
+            value={jobLocation ?? ''}
+            onChange={e => onLocation(e.target.value)}
+            className="w-full bg-white border-2 border-slate-200 rounded-2xl px-5 py-3.5 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all"
+          />
+        </div>
+      )}
+      {isFlexi && onLanguages && jobLanguages !== undefined && (
+        <div>
+          <p className="text-xs font-semibold text-slate-700 uppercase tracking-widest mb-3">Languages</p>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {jobLanguages.map(lang => (
+              <span key={lang} className="flex items-center gap-2 bg-white border-2 border-slate-200 hover:border-brand/30 text-slate-700 font-semibold text-sm px-4 py-2 rounded-full transition-all group">
+                {lang}
+                <button onClick={() => removeLang(lang)} className="w-4 h-4 rounded-full bg-slate-200 group-hover:bg-red-100 flex items-center justify-center flex-shrink-0">
+                  <X size={10} className="text-slate-400 group-hover:text-red-500" strokeWidth={3} />
+                </button>
+              </span>
+            ))}
+            {COMMON_LANGS.filter(l => !jobLanguages.map(x => x.toLowerCase()).includes(l.toLowerCase())).slice(0, 5).map(lang => (
+              <button key={lang} onClick={() => addLang(lang)}
+                className="flex items-center gap-1 px-4 py-2 border-2 border-dashed border-slate-200 text-slate-400 hover:border-brand hover:text-brand text-sm font-semibold rounded-full transition-all">
+                <Plus size={12} strokeWidth={2.5} />{lang}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <input
+              ref={langRef}
+              type="text"
+              placeholder="Add a language…"
+              value={langInput}
+              onChange={e => setLangInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && addLang()}
+              className="flex-1 bg-white border-2 border-slate-200 rounded-2xl px-4 py-3 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all"
+            />
+            <button onClick={() => addLang()} disabled={!langInput.trim()}
+              className="px-4 py-3 rounded-2xl bg-brand text-white text-sm font-bold disabled:opacity-30 hover:bg-brand-dark transition-all">
+              <Plus size={16} />
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   )

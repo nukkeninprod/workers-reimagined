@@ -410,7 +410,6 @@ export function StepJobSchedule({
       {showDatePicker && createPortal((() => {
         const today = new Date()
         const baseMonth = new Date(today.getFullYear(), today.getMonth() + calOffset, 1)
-        const months2 = [baseMonth, new Date(baseMonth.getFullYear(), baseMonth.getMonth() + 1, 1)]
         const selecting = startDate && !endDate
 
         function CalMonth({ month }: { month: Date }) {
@@ -460,7 +459,7 @@ export function StepJobSchedule({
         return (
           <div className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
             onClick={() => { setShowDatePicker(false); setPickerHover(null) }}>
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-5" onClick={e => e.stopPropagation()}>
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xs p-5" onClick={e => e.stopPropagation()}>
               {/* Header */}
               <div className="flex items-center justify-between mb-2">
                 <div>
@@ -475,18 +474,16 @@ export function StepJobSchedule({
                 </button>
               </div>
 
-              {/* Month nav */}
-              <div className="flex items-center justify-between mb-4">
+              {/* Month nav + single month */}
+              <div className="flex items-center justify-between mb-1">
                 <button onClick={() => setCalOffset(o => o - 1)}
-                  className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500">‹</button>
+                  className="w-7 h-7 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500 text-base">‹</button>
                 <span />
                 <button onClick={() => setCalOffset(o => o + 1)}
-                  className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500">›</button>
+                  className="w-7 h-7 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500 text-base">›</button>
               </div>
-
-              {/* Two months */}
-              <div className="flex gap-6" onMouseLeave={() => setPickerHover(null)}>
-                {months2.map((m, i) => <CalMonth key={i} month={m} />)}
+              <div onMouseLeave={() => setPickerHover(null)}>
+                <CalMonth month={baseMonth} />
               </div>
 
               {/* Footer */}

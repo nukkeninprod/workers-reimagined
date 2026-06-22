@@ -117,88 +117,100 @@ export function StepJobSchedule({
     <div className="w-full max-w-3xl mx-auto px-4 pb-12">
       {mode === 'review' ? (
         <>
-          <h2 className="text-3xl font-bold text-slate-900 text-center mb-2">Are these hours correct?</h2>
+          <h2 className="text-3xl font-bold text-slate-900 text-center mb-2 tracking-tight">Are these hours correct?</h2>
           <p className="text-sm text-slate-500 text-center mb-8">Review the schedule we detected. You can modify it if needed.</p>
 
-          {/* Period summary */}
-          {start && end && (
-            <div className="bg-white border-2 border-slate-100 rounded-3xl p-6 mb-4 shadow-sm flex items-center justify-center gap-4">
-              <Calendar size={20} className="text-brand" />
-              <div className="text-center">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Period</p>
-                <p className="text-base font-bold text-slate-900">{fmtLong(start)} → {fmtLong(end)}</p>
-              </div>
-            </div>
-          )}
+          {/* Grouped data card */}
+          <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-6 sm:p-8 mb-6">
 
-          {/* Working days pills (read-only) */}
-          {typicalWeek.length > 0 && (
-            <div className="bg-white border-2 border-slate-100 rounded-3xl p-5 mb-4 shadow-sm">
-              <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Working days</p>
-              <div className="flex flex-wrap justify-center gap-2">
+            {/* Period */}
+            {start && end && (
+              <>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                    <Calendar size={14} /> Period
+                  </h3>
+                  <span className="text-sm font-semibold text-slate-700">
+                    {fmtLong(start)} <span className="text-slate-300 mx-1">→</span> {fmtLong(end)}
+                  </span>
+                </div>
+                <hr className="border-slate-200 my-6" />
+              </>
+            )}
+
+            {/* Working days */}
+            <div>
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <Calendar size={14} /> Working days
+              </h3>
+              <div className="flex flex-wrap gap-2 sm:gap-2.5">
                 {DAYS.map(d => {
                   const active = typicalWeek.includes(d.key)
-                  return (
-                    <span key={d.key}
-                      className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors
-                        ${active ? 'bg-brand text-white' : 'bg-slate-50 text-slate-300'}`}>
+                  return active ? (
+                    <span key={d.key} className="px-4 py-2 rounded-full text-sm font-semibold bg-brand text-white shadow-md shadow-brand/20 ring-2 ring-brand ring-offset-2 ring-offset-slate-50">
+                      {d.short}
+                    </span>
+                  ) : (
+                    <span key={d.key} className="px-4 py-2 rounded-full text-sm font-semibold bg-white border border-slate-200 text-slate-400">
                       {d.short}
                     </span>
                   )
                 })}
               </div>
             </div>
-          )}
 
-          {/* Shifts summary */}
-          {typicalWeek.length > 0 && (
-            <div className="bg-white border-2 border-slate-100 rounded-3xl p-5 mb-4 shadow-sm">
-              <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Shifts</p>
-              <div className="space-y-2">
-                {DAYS.filter(d => typicalWeek.includes(d.key)).map(d => (
-                  <div key={d.key} className="flex items-center gap-3 py-1.5">
-                    <div className="w-24 text-sm font-semibold text-slate-700">{d.long}</div>
-                    <div className="flex-1 flex flex-wrap gap-1.5">
-                      {(shiftsByDay[d.key] ?? []).length === 0 && (
-                        <span className="text-xs text-slate-400 italic">No shift</span>
-                      )}
-                      {(shiftsByDay[d.key] ?? []).map((s, i) => (
-                        <span key={i} className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">
-                          <Clock size={11} /> {s.start}–{s.end}
-                          <span className="text-emerald-500">·</span>
-                          <Users size={10} /> {s.people}
-                          {s.breakMin > 0 && (<><span className="text-emerald-500">·</span> {s.breakMin}m</>)}
-                        </span>
-                      ))}
-                    </div>
+            {typicalWeek.length > 0 && (
+              <>
+                <hr className="border-slate-200 my-8" />
+
+                {/* Shifts */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                      <Clock size={14} /> Detected shifts
+                    </h3>
+                    <span className="text-xs font-medium text-slate-500 bg-white px-2.5 py-1 rounded-md border border-slate-200">
+                      {typicalWeek.length} day{typicalWeek.length !== 1 ? 's' : ''} planned
+                    </span>
                   </div>
-                ))}
-              </div>
-              <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-100">
-                <button onClick={() => setShowAll(true)} className="text-xs font-semibold text-slate-500 hover:text-slate-700 flex items-center gap-1.5">
-                  <List size={14} /> View all shifts
-                </button>
-                <div className="text-xs text-slate-500">
-                  {generatedDays.length} day{generatedDays.length !== 1 ? 's' : ''} scheduled
+                  <div>
+                    {DAYS.filter(d => typicalWeek.includes(d.key)).map((d, idx) => (
+                      <div key={d.key} className={`flex flex-col sm:flex-row sm:items-center py-3 ${idx > 0 ? 'border-t border-slate-200/70' : ''}`}>
+                        <div className="w-32 font-medium text-slate-700 mb-2 sm:mb-0">{d.long}</div>
+                        <div className="flex flex-wrap gap-2 flex-1">
+                          {(shiftsByDay[d.key] ?? []).length === 0 && (
+                            <span className="text-xs text-slate-400 italic">No shift</span>
+                          )}
+                          {(shiftsByDay[d.key] ?? []).map((s, i) => (
+                            <span key={i} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                              <Clock size={14} className="text-emerald-500" /> {s.start} – {s.end}
+                              <span className="text-emerald-300">|</span>
+                              <Users size={14} className="text-emerald-600" /> {s.people}
+                              {s.breakMin > 0 && (<><span className="text-emerald-300">|</span> {s.breakMin}m</>)}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {start && end && (
+                    <div className="mt-4 pt-4 border-t border-slate-200/70 flex justify-between items-center">
+                      <button onClick={() => setShowAll(true)} className="text-xs font-semibold text-slate-500 hover:text-slate-700 flex items-center gap-1.5">
+                        <List size={14} /> View all shifts
+                      </button>
+                      <span className="text-xs text-slate-500">{generatedDays.length} day{generatedDays.length !== 1 ? 's' : ''} scheduled in period</span>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* Calendar preview */}
-          {months.length > 0 && months.length <= 6 && (
-            <div className="bg-white border-2 border-slate-100 rounded-3xl p-5 mb-6 shadow-sm">
-              <div className={`grid gap-5 ${months.length === 1 ? 'grid-cols-1' : months.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
-                {months.map(m => <MiniMonth key={m.toISOString()} month={m} typicalWeek={typicalWeek} shiftsByDay={shiftsByDay} isWithin={isWithin} />)}
-              </div>
-            </div>
-          )}
+              </>
+            )}
+          </div>
 
           {/* Modify CTA */}
           <div className="flex justify-center">
             <button onClick={() => setMode('edit')}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white border-2 border-slate-200 hover:border-brand hover:text-brand text-sm font-bold text-slate-600 transition-all">
-              <Pencil size={14} /> Modify
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-all">
+              <Pencil size={14} /> Modify hours
             </button>
           </div>
         </>

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Calendar, Clock, Users, Coffee, X, Plus, Copy, List, CalendarPlus } from 'lucide-react'
+import { Calendar, Clock, Users, Coffee, X, Plus, Copy, List, CalendarPlus, Pencil, Check } from 'lucide-react'
 
 export type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun'
 export interface Shift { start: string; end: string; people: number; breakMin: number }
@@ -47,6 +47,7 @@ export function StepJobSchedule({
   onStartDate, onEndDate, onTypicalWeek, onShifts,
 }: Props) {
   const [showAll, setShowAll] = useState(false)
+  const [mode, setMode] = useState<'review' | 'edit'>(detected ? 'review' : 'edit')
 
   const start = startDate ? new Date(startDate) : null
   const end = endDate ? new Date(endDate) : null
@@ -114,23 +115,116 @@ export function StepJobSchedule({
 
   return (
     <div className="w-full max-w-3xl mx-auto px-4 pb-12">
-      {detected ? (
+      {mode === 'review' ? (
         <>
           <h2 className="text-3xl font-bold text-slate-900 text-center mb-2">Are these hours correct?</h2>
+          <p className="text-sm text-slate-500 text-center mb-8">Review the schedule we detected. You can modify it if needed.</p>
+
+          {/* Period summary */}
+          {start && end && (
+            <div className="bg-white border-2 border-slate-100 rounded-3xl p-6 mb-4 shadow-sm flex items-center justify-center gap-4">
+              <Calendar size={20} className="text-brand" />
+              <div className="text-center">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Period</p>
+                <p className="text-base font-bold text-slate-900">{fmtLong(start)} → {fmtLong(end)}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Working days pills (read-only) */}
+          {typicalWeek.length > 0 && (
+            <div className="bg-white border-2 border-slate-100 rounded-3xl p-5 mb-4 shadow-sm">
+              <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Working days</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {DAYS.map(d => {
+                  const active = typicalWeek.includes(d.key)
+                  return (
+                    <span key={d.key}
+                      className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors
+                        ${active ? 'bg-brand text-white' : 'bg-slate-50 text-slate-300'}`}>
+                      {d.short}
+                    </span>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Shifts summary */}
+          {typicalWeek.length > 0 && (
+            <div className="bg-white border-2 border-slate-100 rounded-3xl p-5 mb-4 shadow-sm">
+              <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Shifts</p>
+              <div className="space-y-2">
+                {DAYS.filter(d => typicalWeek.includes(d.key)).map(d => (
+                  <div key={d.key} className="flex items-center gap-3 py-1.5">
+                    <div className="w-24 text-sm font-semibold text-slate-700">{d.long}</div>
+                    <div className="flex-1 flex flex-wrap gap-1.5">
+                      {(shiftsByDay[d.key] ?? []).length === 0 && (
+                        <span className="text-xs text-slate-400 italic">No shift</span>
+                      )}
+                      {(shiftsByDay[d.key] ?? []).map((s, i) => (
+                        <span key={i} className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">
+                          <Clock size={11} /> {s.start}–{s.end}
+                          <span className="text-emerald-500">·</span>
+                          <Users size={10} /> {s.people}
+                          {s.breakMin > 0 && (<><span className="text-emerald-500">·</span> {s.breakMin}m</>)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-100">
+                <button onClick={() => setShowAll(true)} className="text-xs font-semibold text-slate-500 hover:text-slate-700 flex items-center gap-1.5">
+                  <List size={14} /> View all shifts
+                </button>
+                <div className="text-xs text-slate-500">
+                  {generatedDays.length} day{generatedDays.length !== 1 ? 's' : ''} scheduled
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Calendar preview */}
+          {months.length > 0 && months.length <= 6 && (
+            <div className="bg-white border-2 border-slate-100 rounded-3xl p-5 mb-6 shadow-sm">
+              <div className={`grid gap-5 ${months.length === 1 ? 'grid-cols-1' : months.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                {months.map(m => <MiniMonth key={m.toISOString()} month={m} typicalWeek={typicalWeek} shiftsByDay={shiftsByDay} isWithin={isWithin} />)}
+              </div>
+            </div>
+          )}
+
+          {/* Modify CTA */}
+          <div className="flex justify-center">
+            <button onClick={() => setMode('edit')}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white border-2 border-slate-200 hover:border-brand hover:text-brand text-sm font-bold text-slate-600 transition-all">
+              <Pencil size={14} /> Modify
+            </button>
+          </div>
         </>
       ) : (
         <>
-          <div className="flex justify-center mb-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
-              <CalendarPlus size={13} /> No schedule detected in your offer
+          {!detected && (
+            <div className="flex justify-center mb-3">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
+                <CalendarPlus size={13} /> No schedule detected in your offer
+              </div>
             </div>
-          </div>
-          <h2 className="text-3xl font-bold text-slate-900 text-center mb-2">Select your job dates</h2>
-          <p className="text-sm text-slate-500 text-center mb-8">Pick a start and end date — like booking a stay.</p>
-        </>
-      )}
-
-      {/* Date range pickers */}
+          )}
+          <h2 className="text-3xl font-bold text-slate-900 text-center mb-2">
+            {detected ? 'Edit your schedule' : 'Select your job dates'}
+          </h2>
+          <p className="text-sm text-slate-500 text-center mb-6">
+            {detected ? 'Tweak dates, days and shifts below.' : 'Pick a start and end date — like booking a stay.'}
+          </p>
+          {detected && (
+            <div className="flex justify-center mb-6">
+              <button onClick={() => setMode('review')}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold transition-colors">
+                <Check size={14} /> Done editing — back to review
+              </button>
+            </div>
+          )}
       <div className="grid grid-cols-2 gap-3 mb-3">
         <DateField label="Job start date" value={startDate} onChange={onStartDate} display={start ? fmtShort(start) : 'Pick a date'} />
         <DateField label="Job end date" value={endDate} onChange={onEndDate} min={startDate} display={end ? fmtShort(end) : 'Pick a date'} />
@@ -222,13 +316,15 @@ export function StepJobSchedule({
       )}
 
       {/* Calendar overview */}
-      {months.length > 0 && months.length <= 6 && (
+      {mode === 'edit' && months.length > 0 && months.length <= 6 && (
         <div className="bg-white border-2 border-slate-100 rounded-3xl p-5 shadow-sm">
           <p className="text-xs text-slate-500 mb-4">Click any day to edit its shifts. Each dot represents one shift.</p>
           <div className={`grid gap-5 ${months.length === 1 ? 'grid-cols-1' : months.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
             {months.map(m => <MiniMonth key={m.toISOString()} month={m} typicalWeek={typicalWeek} shiftsByDay={shiftsByDay} isWithin={isWithin} />)}
           </div>
         </div>
+      )}
+        </>
       )}
 
       {/* All shifts modal */}

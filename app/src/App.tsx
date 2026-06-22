@@ -149,6 +149,7 @@ export default function App() {
             <StepConfirmJobTitle
               initialTitle={state.jobTitle}
               initialSpecialty={state.specialty}
+              jobCategory={state.jobCategory}
               onChange={(title, specialty) => update({ jobTitle: title, specialty })}
             />
           )}

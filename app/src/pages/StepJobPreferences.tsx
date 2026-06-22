@@ -9,10 +9,10 @@ const LEVELS = [
 ]
 
 const SALARY_CONFIG = {
-  permanent: { min: 2200, max: 6000, step: 50,   default: 3292, avg: 3292, unit: '/mo gross' },
-  freelance:  { min: 200,  max: 1200, step: 25,   default: 500,  avg: 500,  unit: '/day' },
-  flexi:      { min: 10,   max: 30,   step: 0.5,  default: 14,   avg: 14,   unit: '/hr gross' },
-  student:    { min: 10,   max: 30,   step: 0.5,  default: 14,   avg: 14,   unit: '/hr gross' },
+  permanent: { min: 2200, max: 6000, step: 50,   default: 3292, avg: 3292, unit: '/mo gross',  label: 'Salary' },
+  freelance:  { min: 200,  max: 1200, step: 25,   default: 500,  avg: 500,  unit: '/day',       label: 'Daily rate' },
+  flexi:      { min: 10,   max: 30,   step: 0.5,  default: 14,   avg: 14,   unit: '/hr gross',  label: 'Hourly rate' },
+  student:    { min: 400,  max: 1500, step: 25,   default: 650,  avg: 650,  unit: '/mo gross',  label: 'Salary' },
 }
 
 const PERM_CONTRACTS = [
@@ -37,16 +37,21 @@ interface Props {
 export function StepJobPreferences({ experienceLevel, salary, contractType, jobCategory, onExperience, onSalary, onContract }: Props) {
   const isFlexi = jobCategory === 'student_flexi'
   const contracts = isFlexi ? FLEXI_CONTRACTS : PERM_CONTRACTS
-  const cfg = SALARY_CONFIG[contractType ?? (isFlexi ? 'flexi' : 'permanent')]
+  // If arriving on this step with a perm/freelance contractType from Claude but we're on flexi route, ignore it
+  const effectiveContract = isFlexi && (contractType === 'permanent' || contractType === 'freelance')
+    ? null
+    : contractType
+  const cfg = SALARY_CONFIG[effectiveContract ?? (isFlexi ? 'flexi' : 'permanent')]
   const [localSalary, setLocalSalary] = useState(salary || cfg.default)
   const selected = experienceLevel || 'medior'
 
   // Reset slider when contract type changes
   useEffect(() => {
-    const next = contractType ? SALARY_CONFIG[contractType].default : SALARY_CONFIG.permanent.default
+    const key = effectiveContract ?? (isFlexi ? 'flexi' : 'permanent')
+    const next = SALARY_CONFIG[key].default
     setLocalSalary(next)
     onSalary(next)
-  }, [contractType])
+  }, [contractType, isFlexi])
 
   function handleSalary(v: number) {
     setLocalSalary(v)
@@ -110,7 +115,7 @@ export function StepJobPreferences({ experienceLevel, salary, contractType, jobC
       <div>
         <div className="flex items-baseline justify-between mb-3">
           <p className="text-xs font-semibold text-slate-700 uppercase tracking-widest">
-            {contractType === 'freelance' ? 'Daily rate' : (contractType === 'flexi' || contractType === 'student') ? 'Hourly rate' : 'Salary'}
+            {cfg.label}
           </p>
           <span className="text-2xl font-extrabold text-slate-900 tracking-tight">
             €{localSalary.toLocaleString('fr-BE')}

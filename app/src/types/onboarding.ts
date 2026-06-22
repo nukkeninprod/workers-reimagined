@@ -36,7 +36,7 @@ export interface OnboardingState {
   jobLanguages: string[]
   experienceLevel: string
   salary: number
-  contractType: 'permanent' | 'freelance' | null
+  contractType: 'permanent' | 'freelance' | 'flexi' | 'student' | null
   // Company – company details
   companyName: string
   companyAddress: string

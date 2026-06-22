@@ -157,7 +157,7 @@ export default function App() {
                 const sched = data.schedule
                 const workingDays = (sched?.workingDays ?? []) as ('mon'|'tue'|'wed'|'thu'|'fri'|'sat'|'sun')[]
                 const shiftsMap = sched?.shifts ?? null
-                const hasShifts = shiftsMap && Object.keys(shiftsMap).length > 0
+                const hasShifts = !!shiftsMap && Object.keys(shiftsMap).length > 0
                 const hasSched = !!sched && (!!sched.startDate || !!sched.endDate || workingDays.length > 0 || hasShifts)
                 const updates: Partial<OnboardingState> = {
                   parsedJob: data,

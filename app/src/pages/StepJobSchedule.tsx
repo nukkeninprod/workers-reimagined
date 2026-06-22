@@ -227,7 +227,7 @@ export function StepJobSchedule({
                               <Clock size={14} className="text-emerald-500" /> {s.start} – {s.end}
                               <span className="text-emerald-300">|</span>
                               <Users size={14} className="text-emerald-600" /> {s.people}
-                              {s.breakMin > 0 && (<><span className="text-emerald-300">|</span> {s.breakMin}m</>)}
+                              {s.breakMin > 0 && (<><span className="text-emerald-300">|</span><Coffee size={13} className="text-emerald-500" /> {s.breakMin}m</>)}
                               <Pencil size={11} className="text-emerald-400 ml-0.5" />
                             </button>
                           ))}

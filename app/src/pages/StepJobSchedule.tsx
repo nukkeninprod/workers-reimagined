@@ -421,11 +421,11 @@ export function StepJobSchedule({
           while (cells.length % 7 !== 0) cells.push(null)
           return (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-900 text-center mb-3">{month.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</p>
-              <div className="grid grid-cols-7 text-[11px] text-slate-400 font-bold mb-1 text-center">
+              <p className="text-xs font-bold text-slate-900 text-center mb-2">{month.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</p>
+              <div className="grid grid-cols-7 text-[10px] text-slate-400 font-bold mb-1 text-center">
                 {['Mo','Tu','We','Th','Fr','Sa','Su'].map(h => <div key={h}>{h}</div>)}
               </div>
-              <div className="grid grid-cols-7 gap-y-0.5">
+              <div className="grid grid-cols-7">
                 {cells.map((day, i) => {
                   if (!day) return <div key={i} />
                   const iso = `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`
@@ -437,7 +437,7 @@ export function StepJobSchedule({
                   const isHover = selecting && pickerHover && iso > startDate! && iso <= pickerHover
                   return (
                     <div key={i}
-                      className={`relative text-center py-1.5 text-sm select-none transition-colors
+                      className={`relative text-center py-0.5 text-xs select-none transition-colors
                         ${isPast ? 'text-slate-300 cursor-not-allowed' : 'cursor-pointer'}
                         ${(inRange || isHover) ? 'bg-brand/10 text-brand font-semibold' : ''}
                         ${isStart ? 'rounded-l-full' : ''} ${isEnd ? 'rounded-r-full' : ''}
@@ -445,8 +445,8 @@ export function StepJobSchedule({
                       onClick={() => !isPast && handlePickerDay(iso)}
                       onMouseEnter={() => !isPast && selecting && setPickerHover(iso)}
                     >
-                      <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold
-                        ${isStart || isEnd ? 'bg-brand text-white shadow-md' : ''}`}>
+                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold
+                        ${isStart || isEnd ? 'bg-brand text-white shadow-sm' : ''}`}>
                         {day}
                       </span>
                     </div>
@@ -460,7 +460,7 @@ export function StepJobSchedule({
         return (
           <div className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
             onClick={() => { setShowDatePicker(false); setPickerHover(null) }}>
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl p-6" onClick={e => e.stopPropagation()}>
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-5" onClick={e => e.stopPropagation()}>
               {/* Header */}
               <div className="flex items-center justify-between mb-2">
                 <div>

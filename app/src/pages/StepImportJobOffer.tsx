@@ -1,35 +1,77 @@
 import { useState } from 'react'
 import { Link, Sparkles, Loader2 } from 'lucide-react'
+import type { ParsedJobData } from '../types/onboarding'
+import { ALL_SPECIALTIES } from '../data/domains'
 
 interface Props {
+  onParsed: (data: ParsedJobData) => void
   onNext: () => void
 }
 
-export function StepImportJobOffer({ onNext }: Props) {
+const SYSTEM_PROMPT = `You are a job offer parser. Extract structured data from the given job description and return ONLY valid JSON with these exact keys:
+{
+  "jobTitle": "string (exact job title from the offer)",
+  "specialty": "string (pick the single best match from this list, use the exact string):\n${ALL_SPECIALTIES.join(', ')}",
+  "skills": ["array", "of", "technical", "and", "soft", "skills"],
+  "location": "string (city/country where the job is located, or empty string)",
+  "workMode": "remote | hybrid | on-site",
+  "languages": ["array of required languages"],
+  "experienceLevel": "junior | medior | senior | expert",
+  "description": "2-3 sentence summary of the role",
+  "companyName": "string (company name if mentioned, or empty string)",
+  "companyAddress": "string (company address if mentioned, or empty string)",
+  "contractType": "permanent | freelance | null (permanent for CDI/full-time/employee contracts, freelance for freelance/contractor/independent/mission contracts, null if unclear)"
+}
+Return ONLY the JSON object, no explanation, no markdown.`
+
+export function StepImportJobOffer({ onParsed, onNext }: Props) {
   const [textInput, setTextInput] = useState('')
   const [urlInput, setUrlInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const canAnalyze = textInput.trim().length > 0 || urlInput.trim().length > 0
 
-  function handleAnalyze() {
+  async function handleAnalyze() {
     if (!canAnalyze || loading) return
     setLoading(true)
-    // TODO: replace with real Claude API call (claude-3-5-haiku-20241022)
-    setTimeout(() => {
+    setError(null)
+
+    try {
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5',
+          max_tokens: 1024,
+          system: SYSTEM_PROMPT,
+          messages: [{ role: 'user', content: textInput || `Job listing URL: ${urlInput}` }],
+        }),
+      })
+
+      if (!res.ok) throw new Error(`API error ${res.status}`)
+
+      const data = await res.json()
+      const raw: string = data.content?.[0]?.text ?? '{}'
+      const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+      const parsed: ParsedJobData = JSON.parse(cleaned)
+      onParsed(parsed)
+    } catch (e) {
+      console.error('Claude parse error:', e)
+      setError(`Parsing failed: ${e instanceof Error ? e.message : String(e)}`)
       setLoading(false)
-      onNext()
-    }, 1800)
+      return
+    }
+
+    setLoading(false)
+    onNext()
   }
 
   return (
     <div className="flex flex-col items-center w-full max-w-2xl mx-auto">
-      <h1 className="text-4xl font-extrabold text-slate-900 mb-3 text-center tracking-tight">
+      <h1 className="text-4xl font-extrabold text-slate-900 mb-10 text-center tracking-tight">
         Import your job offer
       </h1>
-      <p className="text-slate-500 text-base mb-10 text-center">
-        Paste the job description or a link — we'll extract the details automatically.
-      </p>
 
       <textarea
         placeholder="Paste your job description here…"
@@ -54,23 +96,22 @@ export function StepImportJobOffer({ onNext }: Props) {
         </div>
       </div>
 
-      <button
-        onClick={handleAnalyze}
-        disabled={!canAnalyze || loading}
-        className="flex items-center gap-2.5 bg-gradient-to-r from-purple-600 to-brand hover:opacity-90 text-white px-10 py-3.5 rounded-2xl font-semibold transition-all hover:scale-105 shadow-lg shadow-purple-500/20 text-sm disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100"
-      >
-        {loading ? (
-          <>
-            <Loader2 size={16} className="animate-spin" />
-            Analyzing…
-          </>
-        ) : (
-          <>
-            <Sparkles size={16} />
-            Analyze with AI
-          </>
-        )}
-      </button>
+      {error && (
+        <p className="text-red-500 text-sm mb-4 font-medium">{error}</p>
+      )}
+
+      <div className="w-full flex justify-end">
+        <button
+          onClick={handleAnalyze}
+          disabled={!canAnalyze || loading}
+          className="flex items-center gap-2.5 px-8 py-4 rounded-2xl text-sm font-bold text-white transition-all hover:opacity-90 hover:scale-105 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100"
+          style={{ background: 'linear-gradient(135deg, #7c3aed, #de6b6b)', boxShadow: '0 8px 24px -4px rgba(124,58,237,.35)' }}
+        >
+          {loading
+            ? <><Loader2 size={16} className="animate-spin" /> Analyzing…</>
+            : <><Sparkles size={16} /> Analyze with AI</>}
+        </button>
+      </div>
     </div>
   )
 }

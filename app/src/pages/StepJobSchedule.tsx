@@ -203,13 +203,12 @@ export function StepJobSchedule({
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-2">
                   <Calendar size={14} /> Working days
                 </h3>
-                <p className="text-xs text-slate-400 mb-2">Tap to toggle.</p>
                 <div className="flex flex-wrap gap-1.5">
                   {DAYS.map(d => {
                     const active = typicalWeek.includes(d.key)
                     return (
                       <button key={d.key} onClick={() => toggleDay(d.key)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
+                        className={`px-3.5 py-2 rounded-full text-sm font-semibold transition-all
                           ${active
                             ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/20 ring-2 ring-emerald-500 ring-offset-1 ring-offset-white hover:bg-emerald-600'
                             : 'bg-white border border-slate-200 text-slate-400 hover:border-slate-300 hover:text-slate-600'}`}>

@@ -122,10 +122,10 @@ export function StepJobSchedule({
           {/* Grouped data card */}
           <div className="relative rounded-2xl p-6 sm:p-8 mb-6">
 
-            {/* Modify CTA (top right) */}
+            {/* Modify CTA (top right) — for editing hours */}
             <button onClick={() => setMode('edit')}
               className="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-brand hover:bg-brand-dark text-white text-xs font-semibold shadow-md shadow-brand/25 transition-all hover:scale-105">
-              <Pencil size={13} /> Modify
+              <Pencil size={13} /> Edit hours
             </button>
 
             {/* Period */}
@@ -143,22 +143,23 @@ export function StepJobSchedule({
               </>
             )}
 
-            {/* Working days */}
+            {/* Working days — interactive */}
             <div>
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-2">
                 <Calendar size={14} /> Working days
               </h3>
+              <p className="text-xs text-slate-400 mb-4">Tap a day to add or remove it.</p>
               <div className="flex flex-wrap gap-2 sm:gap-2.5">
                 {DAYS.map(d => {
                   const active = typicalWeek.includes(d.key)
-                  return active ? (
-                    <span key={d.key} className="px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500 text-white shadow-md shadow-emerald-500/20 ring-2 ring-emerald-500 ring-offset-2 ring-offset-white">
+                  return (
+                    <button key={d.key} onClick={() => toggleDay(d.key)}
+                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all
+                        ${active
+                          ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20 ring-2 ring-emerald-500 ring-offset-2 ring-offset-white hover:bg-emerald-600'
+                          : 'bg-white border border-slate-200 text-slate-400 hover:border-slate-300 hover:text-slate-600'}`}>
                       {d.short}
-                    </span>
-                  ) : (
-                    <span key={d.key} className="px-4 py-2 rounded-full text-sm font-semibold bg-white border border-slate-200 text-slate-400">
-                      {d.short}
-                    </span>
+                    </button>
                   )
                 })}
               </div>

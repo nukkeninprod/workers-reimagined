@@ -37,6 +37,11 @@ export interface OnboardingState {
   experienceLevel: string
   salary: number
   contractType: 'permanent' | 'freelance' | 'flexi' | 'student' | null
+  // Company – schedule (flexi/student)
+  jobStartDate: string
+  jobEndDate: string
+  typicalWeek: ('mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun')[]
+  shiftsByDay: Record<string, { start: string; end: string; people: number; breakMin: number }[]>
   // Company – company details
   companyName: string
   companyAddress: string

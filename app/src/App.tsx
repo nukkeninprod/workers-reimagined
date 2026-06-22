@@ -12,6 +12,7 @@ import { StepImportJobOffer } from './pages/StepImportJobOffer'
 import { StepAIExtract } from './pages/StepAIExtract'
 import { StepConfirmJobTitle } from './pages/StepConfirmJobTitle'
 import { StepJobPreferences } from './pages/StepJobPreferences'
+import { StepJobSchedule } from './pages/StepJobSchedule'
 import { StepWorkConditions } from './pages/StepWorkConditions'
 import { StepSignup } from './pages/StepSignup'
 import { StepPricing } from './pages/StepPricing'
@@ -19,11 +20,11 @@ import { StepDone } from './pages/StepDone'
 import { resolveSpecialty } from './data/domains'
 
 const TOTAL_WORKER = 5
-const TOTAL_COMPANY_FLEXI = 8
+const TOTAL_COMPANY_FLEXI = 9
 const TOTAL_COMPANY = 10
 
 const WORKER_LABELS = ['Account type', 'Your details', 'Your profile', 'Sign up', 'Done!']
-const COMPANY_LABELS_FLEXI = ['Account', 'Method', 'Import', 'Role', 'Skills', 'Contract', 'Sign up', 'Done']
+const COMPANY_LABELS_FLEXI = ['Account', 'Method', 'Import', 'Role', 'Skills', 'Contract', 'Schedule', 'Sign up', 'Done']
 const COMPANY_LABELS = ['Account', 'Method', 'Import', 'Role', 'Skills', 'Preferences', 'Conditions', 'Sign up', 'Pricing', 'Done']
 
 const INITIAL: OnboardingState = {
@@ -42,6 +43,16 @@ const INITIAL: OnboardingState = {
   experienceLevel: 'medior',
   salary: 3292,
   contractType: null,
+  jobStartDate: '',
+  jobEndDate: '',
+  typicalWeek: ['mon', 'tue', 'wed', 'thu', 'fri'],
+  shiftsByDay: {
+    mon: [{ start: '09:00', end: '17:00', people: 1, breakMin: 0 }],
+    tue: [{ start: '09:00', end: '17:00', people: 1, breakMin: 0 }],
+    wed: [{ start: '09:00', end: '17:00', people: 1, breakMin: 0 }],
+    thu: [{ start: '09:00', end: '17:00', people: 1, breakMin: 0 }],
+    fri: [{ start: '09:00', end: '17:00', people: 1, breakMin: 0 }],
+  },
   companyName: '', companyAddress: '', companyVAT: '', companyWebsite: '',
   sector: '', companySize: '',
   companyDescription: '',
@@ -176,9 +187,21 @@ export default function App() {
             />
           )}
           {step === 7 && state.accountType === 'company' && isFlexi && (
-            <StepSignup initialEmail={state.email} onValidChange={setSignupValid} onSocialLogin={next} />
+            <StepJobSchedule
+              startDate={state.jobStartDate}
+              endDate={state.jobEndDate}
+              typicalWeek={state.typicalWeek}
+              shiftsByDay={state.shiftsByDay as never}
+              onStartDate={v => update({ jobStartDate: v })}
+              onEndDate={v => update({ jobEndDate: v })}
+              onTypicalWeek={v => update({ typicalWeek: v })}
+              onShifts={v => update({ shiftsByDay: v })}
+            />
           )}
           {step === 8 && state.accountType === 'company' && isFlexi && (
+            <StepSignup initialEmail={state.email} onValidChange={setSignupValid} onSocialLogin={next} />
+          )}
+          {step === 9 && state.accountType === 'company' && isFlexi && (
             <StepDone accountType={state.accountType} firstName={state.firstName}
               onRestart={() => { setState(INITIAL); setStep(1) }} />
           )}
@@ -239,7 +262,8 @@ export default function App() {
           step === 4 ? (!state.jobTitle.trim() || !state.specialty) :
           step === 5 && isFlexi ? state.jobSkills.length === 0 :
           step === 6 && isFlexi ? !state.contractType :
-          step === 7 && isFlexi ? !signupValid :
+          step === 7 && isFlexi ? (!state.jobStartDate || !state.jobEndDate || state.typicalWeek.length === 0) :
+          step === 8 && isFlexi ? !signupValid :
           step === 5 ? state.jobSkills.length === 0 :
           step === 6 ? !state.contractType :
           step === 8 ? !signupValid :

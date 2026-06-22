@@ -66,6 +66,7 @@ export function StepJobPreferences({ experienceLevel, salary, contractType, jobC
       </h1>
 
       {/* Experience */}
+      {!isFlexi && (
       <div>
         <p className="text-xs font-semibold text-slate-700 uppercase tracking-widest mb-3">Experience</p>
         <div className="grid grid-cols-4 gap-3">
@@ -86,6 +87,7 @@ export function StepJobPreferences({ experienceLevel, salary, contractType, jobC
           ))}
         </div>
       </div>
+      )}
 
       {/* Contract */}
       <div>

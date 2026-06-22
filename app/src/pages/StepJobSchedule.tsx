@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Calendar, Clock, Users, Coffee, X, Plus, Copy, List, CalendarPlus, Pencil, Check } from 'lucide-react'
 
 export type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun'
@@ -379,11 +380,11 @@ export function StepJobSchedule({
         </>
       )}
 
-      {/* Shift edit modal */}
-      {editingShift && (() => {
+      {/* Shift edit modal — rendered via portal to escape CSS zoom */}
+      {editingShift && createPortal((() => {
         const dayLabel = DAYS.find(d => d.key === editingShift.day)?.long ?? ''
         return (
-          <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
+          <div className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
             onClick={() => setEditingShift(null)}>
             <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
               {/* Header */}
@@ -437,7 +438,7 @@ export function StepJobSchedule({
             </div>
           </div>
         )
-      })()}
+      })(), document.body)}
 
       {/* All shifts modal */}
       {showAll && (

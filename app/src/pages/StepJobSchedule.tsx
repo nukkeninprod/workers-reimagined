@@ -50,6 +50,27 @@ export function StepJobSchedule({
   const [showAll, setShowAll] = useState(false)
   const [mode, setMode] = useState<'review' | 'edit'>(detected ? 'review' : 'edit')
   const [editingShift, setEditingShift] = useState<{ day: DayKey; idx: number } | null>(null)
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [pickerHover, setPickerHover] = useState<string | null>(null) // ISO date string
+  const [calOffset, setCalOffset] = useState(0) // month offset for calendar navigation
+
+  function handlePickerDay(iso: string) {
+    if (!startDate || (startDate && endDate)) {
+      // start fresh selection
+      onStartDate(iso)
+      onEndDate('')
+    } else {
+      // second click — set end (swap if before start)
+      if (iso < startDate) {
+        onEndDate(startDate)
+        onStartDate(iso)
+      } else {
+        onEndDate(iso)
+      }
+      setShowDatePicker(false)
+      setPickerHover(null)
+    }
+  }
 
   // draft state for the modal
   const [draft, setDraft] = useState<Shift>(DEFAULT_SHIFT)
@@ -152,40 +173,51 @@ export function StepJobSchedule({
           {/* Grouped data card */}
           <div className="relative rounded-2xl p-6 sm:p-8 mb-6">
 
-            {/* Period */}
-            {start && end && (
-              <>
-                <div className="flex items-center justify-between pr-28">
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                    <Calendar size={14} /> Period
-                  </h3>
-                  <span className="text-sm font-semibold text-slate-700">
-                    {fmtLong(start)} <span className="text-slate-300 mx-1">→</span> {fmtLong(end)}
-                  </span>
-                </div>
-                <hr className="border-slate-200 my-6" />
-              </>
-            )}
+            {/* Two segments: Job dates + Working days */}
+            <div className="grid grid-cols-2 gap-4 mb-0">
+              {/* Segment 1: Select job dates */}
+              <div>
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-2">
+                  <Calendar size={14} /> Select job dates
+                </h3>
+                <button onClick={() => setShowDatePicker(true)}
+                  className="w-full mt-2 flex items-center gap-3 bg-white border-2 border-slate-200 hover:border-brand rounded-2xl px-4 py-3 transition-all group">
+                  <Calendar size={16} className="text-slate-400 group-hover:text-brand flex-shrink-0" />
+                  <div className="text-left min-w-0">
+                    {start && end ? (
+                      <>
+                        <p className="text-xs text-slate-400 font-medium">{fmtShort(start)} → {fmtShort(end)}</p>
+                        <p className="text-xs text-slate-400">{generatedDays.length} day{generatedDays.length !== 1 ? 's' : ''} scheduled</p>
+                      </>
+                    ) : start ? (
+                      <p className="text-xs text-slate-500">Pick end date…</p>
+                    ) : (
+                      <p className="text-xs text-slate-400">No dates set</p>
+                    )}
+                  </div>
+                </button>
+              </div>
 
-            {/* Working days — interactive */}
-            <div>
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-2">
-                <Calendar size={14} /> Working days
-              </h3>
-              <p className="text-xs text-slate-400 mb-4">Tap a day to add or remove it.</p>
-              <div className="flex flex-wrap gap-2 sm:gap-2.5">
-                {DAYS.map(d => {
-                  const active = typicalWeek.includes(d.key)
-                  return (
-                    <button key={d.key} onClick={() => toggleDay(d.key)}
-                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all
-                        ${active
-                          ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20 ring-2 ring-emerald-500 ring-offset-2 ring-offset-white hover:bg-emerald-600'
-                          : 'bg-white border border-slate-200 text-slate-400 hover:border-slate-300 hover:text-slate-600'}`}>
-                      {d.short}
-                    </button>
-                  )
-                })}
+              {/* Segment 2: Working days */}
+              <div>
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-2">
+                  <Calendar size={14} /> Working days
+                </h3>
+                <p className="text-xs text-slate-400 mb-2">Tap to toggle.</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {DAYS.map(d => {
+                    const active = typicalWeek.includes(d.key)
+                    return (
+                      <button key={d.key} onClick={() => toggleDay(d.key)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
+                          ${active
+                            ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/20 ring-2 ring-emerald-500 ring-offset-1 ring-offset-white hover:bg-emerald-600'
+                            : 'bg-white border border-slate-200 text-slate-400 hover:border-slate-300 hover:text-slate-600'}`}>
+                        {d.short}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
             </div>
 
@@ -373,6 +405,105 @@ export function StepJobSchedule({
       )}
         </>
       )}
+
+      {/* Date picker modal — Airbnb style, via portal */}
+      {showDatePicker && createPortal((() => {
+        const today = new Date()
+        const baseMonth = new Date(today.getFullYear(), today.getMonth() + calOffset, 1)
+        const months2 = [baseMonth, new Date(baseMonth.getFullYear(), baseMonth.getMonth() + 1, 1)]
+        const selecting = startDate && !endDate
+
+        function CalMonth({ month }: { month: Date }) {
+          const y = month.getFullYear(), m = month.getMonth()
+          const firstWd = (new Date(y, m, 1).getDay() + 6) % 7
+          const daysInMonth = new Date(y, m + 1, 0).getDate()
+          const cells: (number | null)[] = [...Array(firstWd).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)]
+          while (cells.length % 7 !== 0) cells.push(null)
+          return (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-slate-900 text-center mb-3">{month.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</p>
+              <div className="grid grid-cols-7 text-[11px] text-slate-400 font-bold mb-1 text-center">
+                {['Mo','Tu','We','Th','Fr','Sa','Su'].map(h => <div key={h}>{h}</div>)}
+              </div>
+              <div className="grid grid-cols-7 gap-y-0.5">
+                {cells.map((day, i) => {
+                  if (!day) return <div key={i} />
+                  const iso = `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`
+                  const todayIso = new Date().toISOString().slice(0,10)
+                  const isPast = iso < todayIso
+                  const isStart = iso === startDate
+                  const isEnd = iso === endDate
+                  const inRange = startDate && endDate && iso > startDate && iso < endDate
+                  const isHover = selecting && pickerHover && iso > startDate! && iso <= pickerHover
+                  return (
+                    <div key={i}
+                      className={`relative text-center py-1.5 text-sm select-none transition-colors
+                        ${isPast ? 'text-slate-300 cursor-not-allowed' : 'cursor-pointer'}
+                        ${(inRange || isHover) ? 'bg-brand/10 text-brand font-semibold' : ''}
+                        ${isStart ? 'rounded-l-full' : ''} ${isEnd ? 'rounded-r-full' : ''}
+                      `}
+                      onClick={() => !isPast && handlePickerDay(iso)}
+                      onMouseEnter={() => !isPast && selecting && setPickerHover(iso)}
+                    >
+                      <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold
+                        ${isStart || isEnd ? 'bg-brand text-white shadow-md' : ''}`}>
+                        {day}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        }
+
+        return (
+          <div className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => { setShowDatePicker(false); setPickerHover(null) }}>
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl p-6" onClick={e => e.stopPropagation()}>
+              {/* Header */}
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Select job dates</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {!startDate ? 'Pick a start date' : !endDate ? 'Now pick an end date' : `${fmtLong(new Date(startDate))} → ${fmtLong(new Date(endDate))}`}
+                  </p>
+                </div>
+                <button onClick={() => { setShowDatePicker(false); setPickerHover(null) }}
+                  className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400">
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Month nav */}
+              <div className="flex items-center justify-between mb-4">
+                <button onClick={() => setCalOffset(o => o - 1)}
+                  className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500">‹</button>
+                <span />
+                <button onClick={() => setCalOffset(o => o + 1)}
+                  className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500">›</button>
+              </div>
+
+              {/* Two months */}
+              <div className="flex gap-6" onMouseLeave={() => setPickerHover(null)}>
+                {months2.map((m, i) => <CalMonth key={i} month={m} />)}
+              </div>
+
+              {/* Footer */}
+              {startDate && endDate && (
+                <div className="mt-5 pt-4 border-t border-slate-100 flex justify-between items-center">
+                  <button onClick={() => { onStartDate(''); onEndDate('') }}
+                    className="text-sm text-slate-500 hover:text-slate-700 font-medium">Clear</button>
+                  <button onClick={() => { setShowDatePicker(false); setPickerHover(null) }}
+                    className="px-5 py-2 rounded-xl bg-brand hover:bg-brand-dark text-white text-sm font-bold shadow-md shadow-brand/25 transition-all">
+                    Confirm
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      })(), document.body)}
 
       {/* Shift edit modal — rendered via portal to escape CSS zoom */}
       {editingShift && createPortal((() => {

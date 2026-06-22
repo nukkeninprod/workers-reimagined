@@ -171,10 +171,10 @@ export function StepJobSchedule({
           <h2 className="text-3xl font-bold text-slate-900 text-center mb-2 tracking-tight">Are these dates and shifts correct?</h2>
 
           {/* Grouped data card */}
-          <div className="relative rounded-2xl p-7 sm:p-9 mb-6 scale-[1.1] origin-top">
+          <div className="relative rounded-2xl p-6 sm:p-8 mb-6">
 
             {/* Two segments: Job dates + Working days */}
-            <div className="grid grid-cols-[auto_1fr] gap-8 mb-0">
+            <div className="grid grid-cols-[auto_1fr] gap-4 mb-0">
               {/* Segment 1: Select job dates */}
               <div>
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-2">
@@ -203,12 +203,13 @@ export function StepJobSchedule({
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-2">
                   <Calendar size={14} /> Working days
                 </h3>
-                <div className="mt-2 flex flex-wrap gap-1.5">
+                <p className="text-xs text-slate-400 mb-2">Tap to toggle.</p>
+                <div className="flex flex-wrap gap-1.5">
                   {DAYS.map(d => {
                     const active = typicalWeek.includes(d.key)
                     return (
                       <button key={d.key} onClick={() => toggleDay(d.key)}
-                        className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
                           ${active
                             ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/20 ring-2 ring-emerald-500 ring-offset-1 ring-offset-white hover:bg-emerald-600'
                             : 'bg-white border border-slate-200 text-slate-400 hover:border-slate-300 hover:text-slate-600'}`}>

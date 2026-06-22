@@ -152,12 +152,6 @@ export function StepJobSchedule({
           {/* Grouped data card */}
           <div className="relative rounded-2xl p-6 sm:p-8 mb-6">
 
-            {/* Modify CTA (top right) — for editing hours */}
-            <button onClick={() => setMode('edit')}
-              className="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-brand hover:bg-brand-dark text-white text-xs font-semibold shadow-md shadow-brand/25 transition-all hover:scale-105">
-              <Pencil size={13} /> Edit hours
-            </button>
-
             {/* Period */}
             {start && end && (
               <>
